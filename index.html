@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jose Velazquez</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress">
+        <div class="scroll-progress-bar"></div>
+    </div>
+    <header>
+        <h1>Jose Velázquez</h1>
+        <p class="subtitle">Software Engineer</p>
+        <nav class="nav-links">
+            <a href="#about">About</a>
+            <a href="#technologies">Technologies</a>
+            <a href="#experience">Experience</a>
+            <a href="#projects">Projects</a>
+            <a href="#blog">Blog</a>
+            <a href="#opensource">Open Source</a>
+            <a href="mailto:josev9@proton.me">Contact</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" role="switch" aria-checked="false">
+            <span class="toggle-track">
+                <span class="toggle-icon toggle-icon-light">☀️</span>
+                <span class="toggle-icon toggle-icon-dark">🌙</span>
+                <span class="toggle-knob"></span>
+            </span>
+        </button>
+    </header>
+
+    <main>
+        <section id="about">
+            <h2>About</h2>
+            <div class="about-content">
+                <p>I am a software engineer with a passion for building innovative decentralized systems. I enjoy working with Rust and contributing to cutting-edge projects that push the boundaries of what's possible.</p>
+                <p>My interests include blockchain, cryptography and AI. I believe humans excel at orchestrating complex solutions.</p>
+            </div>
+        </section>
+
+        <section id="technologies">
+            <h2>Technologies</h2>
+            <div class="technologies-grid">
+                <div class="tech-category">
+                    <h4>Programming Languages</h4>
+                    <ul class="skills-list">
+                        <li>Rust</li>
+                        <li>Python</li>
+                        <li>Solidity</li>
+                    </ul>
+                </div>
+
+                <div class="tech-category">
+                    <h4>Rust Ecosystem</h4>
+                    <ul class="skills-list">
+                        <li>Tokio</li>
+                        <li>Serde</li>
+                    </ul>
+                </div>
+
+                <div class="tech-category">
+                    <h4>Cloud & Infrastructure</h4>
+                    <div class="sub-category">
+                        <h5>AWS Services:</h5>
+                        <ul class="skills-list">
+                            <li>EC2</li>
+                            <li>SageMaker</li>
+                            <li>DynamoDB</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h4>Development Tools</h4>
+                    <ul class="skills-list">
+                        <li>Git</li>
+                        <li>Docker</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience">
+            <h2>Experience</h2>
+            
+            <div class="experience-item">
+                <h3>Smart Contract Engineer Jr</h3>
+                <div class="experience-meta">
+                    <span class="company">Wafra Money</span>
+                    <span class="location">Remote</span>
+                    <span class="period">Jul 2024 – Present</span>
+                </div>
+                <ul class="experience-details">
+                    <li>Engineered smart contracts in Solidity for multi-protocol DeFi integration, aggregating yields from Aave, Pendle, and Aerodrome protocols while maintaining regulatory compliance and capital safety</li>
+                    <li>Architected automated yield optimization strategies delivering 5-15% APY through algorithmic portfolio rebalancing</li>
+                    <li>Collaborated with distributed team to integrate KYC verification systems and fiat payment rails for seamless user onboarding</li>
+                </ul>
+            </div>
+
+            <div class="experience-item">
+                <h3>Software Engineer Intern</h3>
+                <div class="experience-meta">
+                    <span class="company">Thomson Reuters</span>
+                    <span class="location">Mexico City, Mexico</span>
+                    <span class="period">Jun 2024 – Present</span>
+                </div>
+                <ul class="experience-details">
+                    <li>Built and deployed key components for production-ready RAG-based system for content consumption and generation, serving enterprise clients</li>
+                    <li>Developed semantic search pipeline with FAISS vector database achieving millisecond-latency content retrieval in distributed production environments</li>
+                    <li>Managed AWS SageMaker deployments for scalable model inference, optimizing cost and performance metrics</li>
+                </ul>
+            </div>
+
+            <div class="experience-item">
+                <h3>Developer Advocate</h3>
+                <div class="experience-meta">
+                    <span class="company">Secret Network</span>
+                    <span class="location">Remote</span>
+                    <span class="period">Apr 2022 – Jun 2023</span>
+                </div>
+                <ul class="experience-details">
+                    <li>Contributed to technical documentation with interactive examples and tutorials, resulting in 15% improvement in developer onboarding metrics</li>
+                    <li>Led technical workshops and presentations for 100+ developers, showcasing Rust-based smart contracts framework CosmWasm</li>
+                    <li>Collaborated with core development team to identify and resolve developer experience issues</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>Projects</h2>
+            
+            <div id="projects-list">
+                <div class="loading">Loading projects...</div>
+            </div>
+        </section>
+
+        <section id="blog">
+            <h2>Blog</h2>
+            <div class="blog-section">
+                <h3>Latest Thoughts</h3>
+                <p>I write about software development, cryptography, and dive deep into blockchain.</p>
+                <p><a href="https://paragraph.com/@josev" class="blog-link" target="_blank">Read my blog on Paragraph →</a></p>
+            </div>
+        </section>
+
+        <section id="opensource">
+            <h2>Open Source Contributions</h2>
+            <div>
+                <h3>Recent Pull Requests</h3>
+                <div id="pull-requests">
+                    <div class="loading">Loading pull requests...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="https://github.com/Peponks9" target="_blank">GitHub</a>
+            <a href="https://paragraph.com/@josev" target="_blank">Blog</a>
+            <a href="https://www.linkedin.com/in/jose-veos/" target="_blank">LinkedIn</a>
+            <a href="https://twitter.com/josev9_" target="_blank">Twitter</a>
+        </div>
+        <p>© 2025 Jose Velazquez. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
