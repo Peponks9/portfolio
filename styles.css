@@ -13,6 +13,11 @@
     --status-closed-text: #721c24;
     --status-merged: #e2e3ff;
     --status-merged-text: #383d41;
+    /* Cryptographic background variables */
+    --crypto-bg-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --crypto-char-color: #6c757d;
+    --crypto-char-opacity: 0.15; /* Increased from 0.08 */
+    --crypto-char-size: 12px;
 }
 
 [data-theme="dark"] {
@@ -30,6 +35,11 @@
     --status-closed-text: #d49090;
     --status-merged: #3d3d5a;
     --status-merged-text: #a0a0d4;
+    /* Cryptographic background variables for dark mode */
+    --crypto-bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+    --crypto-char-color: #64ffda;
+    --crypto-char-opacity: 0.20; /* Increased from 0.12 */
+    --crypto-char-size: 14px;
 }
 
 * {
@@ -42,28 +52,148 @@ body {
     font-family: 'Georgia', 'Times New Roman', serif;
     line-height: 1.6;
     color: var(--text-color);
-    background: var(--bg-color);
+    background: var(--crypto-bg-gradient);
     max-width: 800px;
     margin: 0 auto;
     padding: 2rem 1rem;
     padding-top: 6rem; /* Add top padding for sticky header */
     transition: background-color 0.3s ease, color 0.3s ease;
     background-image:
+        var(--crypto-bg-gradient),
         radial-gradient(circle at 25% 25%, rgba(0, 123, 255, 0.02) 0%, transparent 50%),
         radial-gradient(circle at 75% 75%, rgba(0, 123, 255, 0.02) 0%, transparent 50%);
+    position: relative;
+}
+
+/* Cryptographic Background Styles */
+.crypto-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5; /* Increased from 0 */
+    overflow: hidden;
+}
+
+.crypto-character {
+    position: absolute;
+    color: var(--crypto-char-color);
+    opacity: var(--crypto-char-opacity);
+    font-family: 'Courier New', monospace;
+    font-weight: 300;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    z-index: 6; /* Increased from 1 */
+}
+
+.hex-string {
+    font-size: var(--crypto-char-size);
+    animation: floatHex 25s linear infinite;
+}
+
+.binary-cluster {
+    font-size: calc(var(--crypto-char-size) - 2px);
+    animation: driftBinary 18s linear infinite;
+    letter-spacing: 1px;
+}
+
+.crypto-symbol {
+    font-size: calc(var(--crypto-char-size) + 2px);
+    animation: pulseSymbol 5s ease-in-out infinite;
+}
+
+.hash-symbol {
+    font-size: calc(var(--crypto-char-size) + 4px);
+    animation: rotateHash 10s linear infinite;
+}
+
+/* Cryptographic Animations */
+@keyframes floatHex {
+    0% {
+        transform: translateY(100vh) translateX(-30px) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: var(--crypto-char-opacity);
+    }
+    90% {
+        opacity: var(--crypto-char-opacity);
+    }
+    100% {
+        transform: translateY(-50px) translateX(30px) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+@keyframes driftBinary {
+    0% {
+        transform: translateX(-100px) translateY(0px);
+        opacity: 0;
+    }
+    10% {
+        opacity: var(--crypto-char-opacity);
+    }
+    90% {
+        opacity: var(--crypto-char-opacity);
+    }
+    100% {
+        transform: translateX(calc(100vw + 100px)) translateY(-20px);
+        opacity: 0;
+    }
+}
+
+@keyframes pulseSymbol {
+    0%, 100% {
+        opacity: calc(var(--crypto-char-opacity) * 0.5);
+        transform: scale(1);
+    }
+    50% {
+        opacity: var(--crypto-char-opacity);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes rotateHash {
+    0% {
+        transform: rotate(0deg);
+        opacity: calc(var(--crypto-char-opacity) * 0.7);
+    }
+    50% {
+        opacity: var(--crypto-char-opacity);
+    }
+    100% {
+        transform: rotate(360deg);
+        opacity: calc(var(--crypto-char-opacity) * 0.7);
+    }
+}
+
+/* Ensure content stays above background */
+header, main, footer {
+    position: relative;
+    z-index: 10; /* Above cryptographic background */
 }
 
 header {
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     margin-bottom: 3rem;
-    padding-bottom: 1rem;
+    padding: 1rem 1rem 1rem 2rem; /* Added left padding */
     position: relative;
     position: sticky;
     top: 0;
-    background: var(--bg-color);
+    background: rgba(255, 255, 255, 0.95);
     z-index: 100;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: all 0.3s ease;
+}
+
+/* Dark mode header adjustments */
+[data-theme="dark"] header {
+    background: rgba(26, 26, 26, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 h1 {

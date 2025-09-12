@@ -257,3 +257,171 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Cryptographic Background Effect
+class CryptographicBackground {
+    constructor() {
+        this.container = document.getElementById('cryptoBackground');
+        this.characters = [];
+        this.hexChars = '0123456789ABCDEF';
+        this.cryptoSymbols = ['⊕', '∈', '≡', '∧', '∨', '¬'];
+        this.isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+        
+        this.init();
+        this.setupThemeObserver();
+    }
+
+    init() {
+        console.log('Initializing cryptographic background...');
+        this.createStaticElements();
+        this.startAnimatedElements();
+        console.log('Cryptographic background initialized');
+    }
+
+    setupThemeObserver() {
+        // Watch for theme changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                    this.isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+                    this.updateTheme();
+                }
+            });
+        });
+        
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+        });
+    }
+
+    updateTheme() {
+        // Update existing elements' opacity and colors based on theme
+        const elements = this.container.querySelectorAll('.crypto-character');
+        elements.forEach(element => {
+            element.style.opacity = this.isDarkMode ? '0.20' : '0.15';
+        });
+    }
+
+    createHexString() {
+        const element = document.createElement('div');
+        element.className = 'crypto-character hex-string';
+        
+        // Generate random hex string
+        let hexString = '';
+        const length = Math.floor(Math.random() * 6) + 4;
+        for (let i = 0; i < length; i++) {
+            hexString += this.hexChars[Math.floor(Math.random() * this.hexChars.length)];
+        }
+        
+        element.textContent = hexString;
+        element.style.left = Math.random() * 100 + '%';
+        element.style.animationDelay = Math.random() * 5 + 's';
+        element.style.animationDuration = (20 + Math.random() * 10) + 's';
+        
+        this.container.appendChild(element);
+        
+        // Remove element after animation
+        setTimeout(() => {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }, 30000);
+    }
+
+    createBinaryCluster() {
+        const element = document.createElement('div');
+        element.className = 'crypto-character binary-cluster';
+        
+        // Generate binary string
+        let binary = '';
+        const length = Math.floor(Math.random() * 10) + 6;
+        for (let i = 0; i < length; i++) {
+            binary += Math.random() > 0.5 ? '1' : '0';
+        }
+        
+        element.textContent = binary;
+        element.style.top = Math.random() * 100 + '%';
+        element.style.animationDelay = Math.random() * 3 + 's';
+        element.style.animationDuration = (15 + Math.random() * 8) + 's';
+        
+        this.container.appendChild(element);
+        
+        setTimeout(() => {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }, 23000);
+    }
+
+    createCryptoSymbol() {
+        const element = document.createElement('div');
+        element.className = 'crypto-character crypto-symbol';
+        
+        element.textContent = this.cryptoSymbols[Math.floor(Math.random() * this.cryptoSymbols.length)];
+        element.style.left = Math.random() * 100 + '%';
+        element.style.top = Math.random() * 100 + '%';
+        element.style.animationDelay = Math.random() * 4 + 's';
+        element.style.animationDuration = (4 + Math.random() * 2) + 's';
+        
+        this.container.appendChild(element);
+        console.log('Created crypto symbol:', element.textContent);
+    }
+
+    createHashSymbol() {
+        const element = document.createElement('div');
+        element.className = 'crypto-character hash-symbol';
+        
+        element.textContent = '#';
+        element.style.left = Math.random() * 100 + '%';
+        element.style.top = Math.random() * 100 + '%';
+        element.style.animationDelay = Math.random() * 8 + 's';
+        element.style.animationDuration = (8 + Math.random() * 4) + 's';
+        
+        this.container.appendChild(element);
+    }
+
+    createStaticElements() {
+        // Create fewer static elements for subtlety
+        for (let i = 0; i < 8; i++) {
+            this.createCryptoSymbol();
+        }
+        
+        for (let i = 0; i < 5; i++) {
+            this.createHashSymbol();
+        }
+    }
+
+    startAnimatedElements() {
+        // Create floating hex strings less frequently
+        setInterval(() => {
+            this.createHexString();
+        }, 3000);
+
+        // Create binary clusters occasionally
+        setInterval(() => {
+            this.createBinaryCluster();
+        }, 5000);
+
+        // Occasionally refresh static symbols
+        setInterval(() => {
+            const symbols = this.container.querySelectorAll('.crypto-symbol');
+            if (symbols.length > 0) {
+                const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                randomSymbol.textContent = this.cryptoSymbols[Math.floor(Math.random() * this.cryptoSymbols.length)];
+            }
+        }, 10000);
+    }
+}
+
+// Initialize cryptographic background when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing cryptographic background...');
+    const container = document.getElementById('cryptoBackground');
+    if (container) {
+        console.log('Container found, creating CryptographicBackground instance');
+        new CryptographicBackground();
+    } else {
+        console.error('Cryptographic background container not found!');
+    }
+});
