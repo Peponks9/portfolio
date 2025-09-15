@@ -1,19 +1,15 @@
 // GitHub API configuration
-const GITHUB_USERNAME = 'Peponks9'; // Replace with your GitHub username
+const GITHUB_USERNAME = 'Peponks9'; 
 const GITHUB_API_BASE = 'https://api.github.com';
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
-// Fetch GitHub user data
 async function fetchGitHubData() {
     try {
-        // Fetch specific repositories
         const specificRepos = await fetchSpecificRepositories();
 
-        // Fetch pull requests
         const prsResponse = await fetch(`${GITHUB_API_BASE}/search/issues?q=author:${GITHUB_USERNAME}+type:pr&sort=updated&per_page=10`);
         const prsData = await prsResponse.json();
 
-        // Use specific repos or fall back to regular repos
         let reposToShow = specificRepos;
         if (!reposToShow || reposToShow.length === 0) {
             const reposResponse = await fetch(`${GITHUB_API_BASE}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6&type=public`);
@@ -21,22 +17,18 @@ async function fetchGitHubData() {
             reposToShow = reposData.slice(0, 6);
         }
 
-        // Render projects
-        renderProjects(reposToShow);
+                renderProjects(projects);
 
-        // Render pull requests
-        renderPullRequests(prsData.items || []);
+                renderPullRequests(pullRequests);
 
     } catch (error) {
         console.error('Error fetching GitHub data:', error);
 
-        // Show error messages
         document.getElementById('projects-list').innerHTML = '<div class="loading">Unable to load GitHub data. Please check the username configuration.</div>';
         document.getElementById('pull-requests').innerHTML = '<div class="loading">Unable to load pull requests.</div>';
     }
 }
 
-// Fetch specific repositories by name
 async function fetchSpecificRepositories() {
     const repoNames = ['smol-evm', 'merkle-tree-rs', 'codeforces-problemset'];
 
@@ -66,7 +58,6 @@ function renderProjects(repos) {
         return;
     }
 
-    // Filter out forks and show only original repos, or most starred ones
     const filteredRepos = repos
         .filter(repo => !repo.fork || repo.stargazers_count > 0)
         .sort((a, b) => (b.stargazers_count + b.forks_count) - (a.stargazers_count + a.forks_count))
@@ -126,8 +117,7 @@ function formatDate(dateString) {
     return `${Math.floor(diffDays / 365)} years ago`;
 }
 
-// Smooth scrolling for navigation
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
@@ -140,59 +130,49 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Load GitHub data when page loads
-document.addEventListener('DOMContentLoaded', fetchGitHubData);
+document.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle');
 
-// Theme toggle functionality
-const themeToggle = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    themeToggle.setAttribute('aria-checked', currentTheme === 'dark' ? 'true' : 'false');
 
-// Check for saved theme preference or default to dark mode
-const currentTheme = localStorage.getItem('theme') || 'dark';
-document.documentElement.setAttribute('data-theme', currentTheme);
-themeToggle.setAttribute('aria-checked', currentTheme === 'dark' ? 'true' : 'false');
-
-// Toggle theme function
-function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    themeToggle.setAttribute('aria-checked', newTheme === 'dark' ? 'true' : 'false');
-}
-
-// Add event listener to theme toggle button
-themeToggle.addEventListener('click', toggleTheme);
-
-// Scroll Progress Indicator
-function updateScrollProgress() {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrollPercent = (scrollTop / scrollHeight) * 100;
-    
-    const progressBar = document.querySelector('.scroll-progress-bar');
-    if (progressBar) {
-        progressBar.style.width = scrollPercent + '%';
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        themeToggle.setAttribute('aria-checked', newTheme === 'dark' ? 'true' : 'false');
     }
-}
 
-// Throttle scroll events for better performance
-let scrollThrottleTimer = null;
-window.addEventListener('scroll', function() {
-    if (!scrollThrottleTimer) {
-        scrollThrottleTimer = setTimeout(function() {
-            updateScrollProgress();
-            scrollThrottleTimer = null;
-        }, 10);
+    themeToggle.addEventListener('click', toggleTheme);
+
+    function updateScrollProgress() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrollPercent = (scrollTop / scrollHeight) * 100;
+        
+        const progressBar = document.querySelector('.scroll-progress-bar');
+        if (progressBar) {
+            progressBar.style.width = scrollPercent + '%';
+        }
     }
-});
 
-// Initialize scroll progress on page load
-document.addEventListener('DOMContentLoaded', function() {
+    // Throttle scroll events for better performance
+    let scrollThrottleTimer = null;
+    window.addEventListener('scroll', function() {
+        if (!scrollThrottleTimer) {
+            scrollThrottleTimer = setTimeout(function() {
+                updateScrollProgress();
+                scrollThrottleTimer = null;
+            }, 10);
+        }
+    });
+
     updateScrollProgress();
 });
 
-// Pull-to-Refresh functionality for mobile
 let startY = 0;
 let isPulling = false;
 
@@ -209,7 +189,6 @@ document.addEventListener('touchmove', function(e) {
     
     if (pullDistance > 80) { // Minimum pull distance
         e.preventDefault(); // Prevent default scrolling
-        // Add visual feedback here if desired
     }
 });
 
@@ -220,10 +199,8 @@ document.addEventListener('touchend', function(e) {
     const pullDistance = endY - startY;
     
     if (pullDistance > 80) {
-        // Trigger refresh
         fetchGitHubData();
         
-        // Add success feedback
         const notification = document.createElement('div');
         notification.textContent = '🔄 Refreshing...';
         notification.style.cssText = `
@@ -248,7 +225,6 @@ document.addEventListener('touchend', function(e) {
     isPulling = false;
 });
 
-// Add fadeIn animation for notifications
 const style = document.createElement('style');
 style.textContent = `
     @keyframes fadeIn {
@@ -258,7 +234,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Cryptographic Background Effect
 class CryptographicBackground {
     constructor() {
         this.container = document.getElementById('cryptoBackground');

@@ -16,7 +16,7 @@
     /* Cryptographic background variables */
     --crypto-bg-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     --crypto-char-color: #6c757d;
-    --crypto-char-opacity: 0.15; /* Increased from 0.08 */
+    --crypto-char-opacity: 0.15; 
     --crypto-char-size: 12px;
 }
 
@@ -38,7 +38,7 @@
     /* Cryptographic background variables for dark mode */
     --crypto-bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
     --crypto-char-color: #64ffda;
-    --crypto-char-opacity: 0.20; /* Increased from 0.12 */
+    --crypto-char-opacity: 0.20; 
     --crypto-char-size: 14px;
 }
 
@@ -56,7 +56,7 @@ body {
     max-width: 800px;
     margin: 0 auto;
     padding: 2rem 1rem;
-    padding-top: 6rem; /* Add top padding for sticky header */
+    padding-top: 6rem; 
     transition: background-color 0.3s ease, color 0.3s ease;
     background-image:
         var(--crypto-bg-gradient),
@@ -73,7 +73,7 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 5; /* Increased from 0 */
+    z-index: 5;
     overflow: hidden;
 }
 
@@ -86,7 +86,7 @@ body {
     pointer-events: none;
     user-select: none;
     white-space: nowrap;
-    z-index: 6; /* Increased from 1 */
+    z-index: 6; 
 }
 
 .hex-string {
@@ -173,13 +173,13 @@ body {
 /* Ensure content stays above background */
 header, main, footer {
     position: relative;
-    z-index: 10; /* Above cryptographic background */
+    z-index: 10;
 }
 
 header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     margin-bottom: 3rem;
-    padding: 1rem 1rem 1rem 2rem; /* Added left padding */
+    padding: 1rem 1rem 1rem 2rem;
     position: relative;
     position: sticky;
     top: 0;
@@ -737,7 +737,7 @@ footer {
 @media (max-width: 768px) {
     body {
         padding: 1rem 0.5rem;
-        padding-top: 5rem; /* Adjust for mobile sticky header */
+        padding-top: 5rem;
     }
 
     .about-content {
