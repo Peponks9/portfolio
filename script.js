@@ -17,9 +17,8 @@ async function fetchGitHubData() {
             reposToShow = reposData.slice(0, 6);
         }
 
-                renderProjects(projects);
-
-                renderPullRequests(pullRequests);
+        renderProjects(reposToShow);
+        renderPullRequests(prsData.items);
 
     } catch (error) {
         console.error('Error fetching GitHub data:', error);
@@ -30,7 +29,7 @@ async function fetchGitHubData() {
 }
 
 async function fetchSpecificRepositories() {
-    const repoNames = ['smol-evm', 'merkle-tree-rs', 'codeforces-problemset'];
+    const repoNames = ['smol-EVM', 'merkle-tree-rs', 'codeforces-problemset'];
 
     try {
         const repoPromises = repoNames.map(async (repoName) => {
@@ -399,4 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Cryptographic background container not found!');
     }
+
+    // Fetch GitHub data when page loads
+    fetchGitHubData();
 });
