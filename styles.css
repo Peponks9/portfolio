@@ -635,10 +635,11 @@ footer {
     text-decoration: underline;
 }
 
-.social-icon {
-    width: 18px;
-    height: 18px;
+.footer-links a .social-icon {
+    width: 16px !important;
+    height: 16px !important;
     flex-shrink: 0;
+    margin-right: 0.25rem;
 }
 
 /* iOS-style Theme toggle switch */
@@ -791,11 +792,14 @@ footer {
         font-size: 1.75rem;
     }
 
-    .theme-toggle {
-        top: 1rem;
-        right: 0.5rem;
-        width: 45px;
-        height: 25px;
+    .footer-links a {
+        margin: 0 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .footer-links a .social-icon {
+        width: 14px !important;
+        height: 14px !important;
     }
 
     .theme-toggle .toggle-track {

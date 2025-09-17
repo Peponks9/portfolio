@@ -4,36 +4,66 @@ const GITHUB_API_BASE = 'https://api.github.com';
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
 async function fetchGitHubData() {
+    console.log('Starting fetchGitHubData...');
     try {
         const specificRepos = await fetchSpecificRepositories();
+        console.log('Specific repos fetched:', specificRepos);
 
-        const prsResponse = await fetch(`${GITHUB_API_BASE}/search/issues?q=author:${GITHUB_USERNAME}+type:pr&sort=updated&per_page=10`);
+        const prsResponse = await fetch(`${GITHUB_API_BASE}/search/issues?q=author:${GITHUB_USERNAME}+type:pr&sort=updated&per_page=10`, {
+            headers: {
+                'User-Agent': 'Jose-Portfolio/1.0'
+            }
+        });
+        console.log('PRs response status:', prsResponse.status);
+
+        if (!prsResponse.ok) {
+            throw new Error(`PRs API failed: ${prsResponse.status} ${prsResponse.statusText}`);
+        }
+
         const prsData = await prsResponse.json();
+        console.log('PRs data:', prsData);
 
         let reposToShow = specificRepos;
         if (!reposToShow || reposToShow.length === 0) {
-            const reposResponse = await fetch(`${GITHUB_API_BASE}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6&type=public`);
+            console.log('No specific repos found, fetching general repos...');
+            const reposResponse = await fetch(`${GITHUB_API_BASE}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6&type=public`, {
+                headers: {
+                    'User-Agent': 'Jose-Portfolio/1.0'
+                }
+            });
+            if (!reposResponse.ok) {
+                throw new Error(`Repos API failed: ${reposResponse.status} ${reposResponse.statusText}`);
+            }
             const reposData = await reposResponse.json();
             reposToShow = reposData.slice(0, 6);
         }
 
+        console.log('Rendering projects with repos:', reposToShow);
         renderProjects(reposToShow);
         renderPullRequests(prsData.items);
 
     } catch (error) {
         console.error('Error fetching GitHub data:', error);
 
-        document.getElementById('projects-list').innerHTML = '<div class="loading">Unable to load GitHub data. Please check the username configuration.</div>';
-        document.getElementById('pull-requests').innerHTML = '<div class="loading">Unable to load pull requests.</div>';
+        document.getElementById('projects-list').innerHTML = '<div class="loading">Unable to load GitHub data. Please check the console for details.</div>';
+        document.getElementById('pull-requests').innerHTML = '<div class="loading">Unable to load pull requests. Please check the console for details.</div>';
     }
 }
 
 async function fetchSpecificRepositories() {
     const repoNames = ['smol-EVM', 'merkle-tree-rs', 'codeforces-problemset'];
+    console.log('Fetching specific repositories:', repoNames);
 
     try {
         const repoPromises = repoNames.map(async (repoName) => {
-            const response = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_USERNAME}/${repoName}`);
+            console.log(`Fetching repo: ${repoName}`);
+            const response = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_USERNAME}/${repoName}`, {
+                headers: {
+                    'User-Agent': 'Jose-Portfolio/1.0'
+                }
+            });
+            console.log(`Response for ${repoName}:`, response.status);
+
             if (response.ok) {
                 return await response.json();
             }
@@ -41,7 +71,9 @@ async function fetchSpecificRepositories() {
         });
 
         const repos = await Promise.all(repoPromises);
-        return repos.filter(repo => repo !== null);
+        const filteredRepos = repos.filter(repo => repo !== null);
+        console.log('Filtered repos:', filteredRepos);
+        return filteredRepos;
 
     } catch (error) {
         console.error('Error fetching specific repositories:', error);
