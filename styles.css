@@ -213,12 +213,13 @@ h1 {
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--light-border);
+    text-align: center;
 }
 
 .nav-links a {
     color: var(--link-color);
     text-decoration: none;
-    margin-right: 2rem;
+    margin: 0 1rem;
     font-size: 0.9rem;
 }
 
@@ -625,10 +626,19 @@ footer {
     color: var(--link-color);
     text-decoration: none;
     margin: 0 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .footer-links a:hover {
     text-decoration: underline;
+}
+
+.social-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 /* iOS-style Theme toggle switch */
@@ -755,9 +765,26 @@ footer {
         gap: 1rem;
     }
 
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+    }
+
     .nav-links a {
-        display: block;
-        margin: 0.5rem 0;
+        display: inline-block;
+        margin: 0;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.85rem;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+        background-color: var(--card-bg);
     }
 
     h1 {
