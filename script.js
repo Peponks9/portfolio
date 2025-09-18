@@ -51,7 +51,7 @@ async function fetchGitHubData() {
 }
 
 async function fetchSpecificRepositories() {
-    const repoNames = ['smol-EVM', 'merkle-tree-rs', 'codeforces-problemset'];
+    const repoNames = ['dsa-rs', 'smol-evm', 'coding-interview-patterns', 'merkle-tree-rs'];
     console.log('Fetching specific repositories:', repoNames);
 
     try {
@@ -119,17 +119,32 @@ function renderPullRequests(prs) {
         return;
     }
 
-    prContainer.innerHTML = prs.map(pr => `
+    prContainer.innerHTML = prs.map(pr => {
+        let statusText = '';
+        let statusClass = '';
+
+        if (pr.state === 'open') {
+            statusText = 'Open';
+            statusClass = 'status-open';
+        } else if (pr.merged_at) {
+            statusText = 'Merged';
+            statusClass = 'status-merged';
+        } else {
+            statusText = 'Closed';
+            statusClass = 'status-closed';
+        }
+
+        return `
         <div class="pr-item">
-            <span class="pr-status ${pr.state === 'open' ? 'status-open' : 'status-merged'}">
-                ${pr.state === 'open' ? 'Open' : 'Merged'}
+            <span class="pr-status ${statusClass}">
+                ${statusText}
             </span>
             <a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a>
             <div class="pr-meta">
                 ${extractRepo(pr.repository_url)} • ${formatDate(pr.updated_at)}
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function extractRepo(url) {
