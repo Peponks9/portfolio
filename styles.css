@@ -18,28 +18,30 @@
     --crypto-char-color: #6c757d;
     --crypto-char-opacity: 0.15; 
     --crypto-char-size: 12px;
+    /* Typography */
+    --font-mono: 'Roboto Mono', 'Courier New', monospace;
 }
 
 [data-theme="dark"] {
-    --bg-color: #1a1a1a;
-    --text-color: #e0e0e0;
-    --heading-color: #f0f0f0;
-    --muted-text: #aaa;
-    --link-color: #4da6ff;
-    --border-color: #444;
-    --light-border: #333;
-    --card-bg: #2a2a2a;
-    --status-open: #2d5a2d;
-    --status-open-text: #90d490;
-    --status-closed: #5a2d2d;
-    --status-closed-text: #d49090;
-    --status-merged: #3d3d5a;
-    --status-merged-text: #a0a0d4;
+    --bg-color: #0f1419;
+    --text-color: #e6e9ea;
+    --heading-color: #ffffff;
+    --muted-text: #b0b3b6;
+    --link-color: #1da1f2;
+    --border-color: #2f3336;
+    --light-border: #38444d;
+    --card-bg: #1c1f23;
+    --status-open: #1b5e20;
+    --status-open-text: #81c784;
+    --status-closed: #b71c1c;
+    --status-closed-text: #ef5350;
+    --status-merged: #311b92;
+    --status-merged-text: #9575cd;
     /* Cryptographic background variables for dark mode */
-    --crypto-bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-    --crypto-char-color: #64ffda;
-    --crypto-char-opacity: 0.20; 
-    --crypto-char-size: 14px;
+    --crypto-bg-gradient: linear-gradient(135deg, #0a0e12 0%, #0f1419 100%);
+    --crypto-char-color: #1da1f2;
+    --crypto-char-opacity: 0.15;
+    --crypto-char-size: 12px;
 }
 
 * {
@@ -49,19 +51,19 @@
 }
 
 body {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    line-height: 1.6;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.7;
     color: var(--text-color);
     background: var(--crypto-bg-gradient);
     max-width: 800px;
     margin: 0 auto;
     padding: 2rem 1rem;
-    padding-top: 6rem; 
+    padding-top: 6rem;
     transition: background-color 0.3s ease, color 0.3s ease;
     background-image:
         var(--crypto-bg-gradient),
-        radial-gradient(circle at 25% 25%, rgba(0, 123, 255, 0.02) 0%, transparent 50%),
-        radial-gradient(circle at 75% 75%, rgba(0, 123, 255, 0.02) 0%, transparent 50%);
+        radial-gradient(circle at 25% 25%, rgba(29, 161, 242, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(29, 161, 242, 0.03) 0%, transparent 50%);
     position: relative;
 }
 
@@ -81,15 +83,13 @@ body {
     position: absolute;
     color: var(--crypto-char-color);
     opacity: var(--crypto-char-opacity);
-    font-family: 'Courier New', monospace;
-    font-weight: 300;
+    font-family: var(--font-mono);
+    font-weight: 400;
     pointer-events: none;
     user-select: none;
     white-space: nowrap;
-    z-index: 6; 
-}
-
-.hex-string {
+    z-index: 6;
+}.hex-string {
     font-size: var(--crypto-char-size);
     animation: floatHex 25s linear infinite;
 }
@@ -197,16 +197,22 @@ header {
 }
 
 h1 {
-    font-size: 2rem;
-    font-weight: normal;
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--heading-color);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
 .subtitle {
-    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
     color: var(--muted-text);
     font-style: italic;
+    font-weight: 400;
+    margin-bottom: 1rem;
 }
 
 .nav-links {
@@ -220,11 +226,15 @@ h1 {
     color: var(--link-color);
     text-decoration: none;
     margin: 0 1rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.005em;
 }
 
 .nav-links a:hover {
     text-decoration: underline;
+    color: var(--link-color);
 }
 
 /* Scroll Progress Indicator */
@@ -273,34 +283,45 @@ section:nth-child(5) { animation-delay: 0.5s; }
 section:nth-child(6) { animation-delay: 0.6s; }
 
 h2 {
-    font-size: 1.5rem;
-    font-weight: normal;
-    margin-bottom: 1rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
     color: var(--heading-color);
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
 }
 
 h3 {
-    font-size: 1.2rem;
-    font-weight: normal;
-    margin-bottom: 0.5rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
     color: var(--heading-color);
+    line-height: 1.4;
 }
 
 h4 {
-    font-size: 1rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    margin-top: 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    margin-top: 1.5rem;
     color: var(--heading-color);
+    letter-spacing: -0.005em;
 }
 
 h5 {
-    font-size: 0.9rem;
-    font-weight: bold;
-    margin-bottom: 0.25rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
     color: var(--link-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.85rem;
 }
 
 .tech-category {
@@ -629,10 +650,15 @@ footer {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: -0.005em;
 }
 
 .footer-links a:hover {
     text-decoration: underline;
+    color: var(--link-color);
 }
 
 .footer-links a .social-icon {
@@ -642,7 +668,23 @@ footer {
     margin-right: 0.25rem;
 }
 
-/* iOS-style Theme toggle switch */
+/* Code and technical elements */
+code, pre, .tech-item, .language-tag {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    background: var(--card-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--link-color);
+}
+
+/* Repository names and technical terms */
+.repo-name, .tech-stack-item {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 0.9em;
+}
 .theme-toggle {
     position: absolute;
     top: 2rem;
@@ -789,7 +831,22 @@ footer {
     }
 
     h1 {
-        font-size: 1.75rem;
+        font-size: 2rem;
+        line-height: 1.2;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+        line-height: 1.4;
+    }
+
+    .subtitle {
+        font-size: 1rem;
     }
 
     .footer-links a {
