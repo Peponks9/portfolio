@@ -289,8 +289,7 @@ async function fetchGitHubData() {
     try {
         const rateLimitResponse = await fetch(`${GITHUB_API_BASE}/rate_limit`, {
             headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                'User-Agent': 'Jose-Portfolio/1.0'
+                'Accept': 'application/vnd.github.v3+json'
             }
         });
         
@@ -311,9 +310,7 @@ async function fetchGitHubData() {
                 
                 const response = await fetch(repoUrl, {
                     headers: {
-                        'Accept': 'application/vnd.github.v3+json',
-                        'User-Agent': 'Jose-Portfolio/1.0',
-                        'Cache-Control': 'no-cache'
+                        'Accept': 'application/vnd.github.v3+json'
                     }
                 });
                 
@@ -336,9 +333,7 @@ async function fetchGitHubData() {
         try {
             const userReposResponse = await fetch(`${GITHUB_API_BASE}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=10&type=public`, {
                 headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'Jose-Portfolio/1.0',
-                    'Cache-Control': 'no-cache'
+                    'Accept': 'application/vnd.github.v3+json'
                 }
             });
             
@@ -355,9 +350,7 @@ async function fetchGitHubData() {
             
             const prsResponse = await fetch(prsUrl, {
                 headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'Jose-Portfolio/1.0',
-                    'Cache-Control': 'no-cache'
+                    'Accept': 'application/vnd.github.v3+json'
                 }
             });
 
@@ -394,9 +387,7 @@ async function fetchGitHubData() {
                 
                 const contributedReposResponse = await fetch(url, {
                     headers: {
-                        'Accept': 'application/vnd.github.v3+json',
-                        'User-Agent': 'Jose-Portfolio/1.0',
-                        'Cache-Control': 'no-cache'
+                        'Accept': 'application/vnd.github.v3+json'
                     }
                 });
 
@@ -588,8 +579,6 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
                         `).join('')}
                     </div>
                 </div>
-                
-                <h4 style="margin-top: 2rem;">Recent Pull Requests</h4>
             `;
         } else {
             console.log('ℹ️ No valid contributed repositories to display');
@@ -600,8 +589,6 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
                         Unable to load contributed repositories.
                     </div>
                 </div>
-                
-                <h4 style="margin-top: 2rem;">Recent Pull Requests</h4>
             `;
         }
     } else {
@@ -613,10 +600,11 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
                     Loading contributed repositories...
                 </div>
             </div>
-            
-            <h4 style="margin-top: 2rem;">Recent Pull Requests</h4>
         `;
     }
+    
+    // Add Recent Pull Requests section header
+    html += '<h4 style="margin-top: 2rem;">Recent Pull Requests</h4>';
     
     // Add pull requests section
     if (!prs || prs.length === 0) {
@@ -637,8 +625,7 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
             
             const prDetailResponse = await fetch(pr.pull_request.url, {
                 headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'Jose-Portfolio/1.0'
+                    'Accept': 'application/vnd.github.v3+json'
                 }
             });
             
