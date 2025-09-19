@@ -3,96 +3,584 @@ const GITHUB_USERNAME = 'Peponks9';
 const GITHUB_API_BASE = 'https://api.github.com';
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
-async function fetchGitHubData() {
-    console.log('Starting fetchGitHubData...');
-    try {
-        const specificRepos = await fetchSpecificRepositories();
-        console.log('Specific repos fetched:', specificRepos);
+// Horizontal navigation
+let currentSection = 0;
+const totalSections = 6;
+const sectionNames = ['about', 'technologies', 'experience', 'projects', 'opensource', 'blog'];
 
-        const prsResponse = await fetch(`${GITHUB_API_BASE}/search/issues?q=author:${GITHUB_USERNAME}+type:pr&sort=updated&per_page=10`, {
-            headers: {
-                'User-Agent': 'Jose-Portfolio/1.0'
+// Enhanced scroll behavior constants
+const SCROLL_BUFFER_THRESHOLD = 120; // pixels of extra scroll before navigation
+const NAVIGATION_DELAY = 250; // ms delay before navigation triggers
+const BUFFER_VISUAL_THRESHOLD = 80; // pixels before showing visual feedback
+const MOMENTUM_THRESHOLD = 5; // minimum scroll speed for momentum detection
+
+// Scroll buffer tracking
+let scrollBuffer = 0;
+let bufferDirection = 0; // -1 for up, 1 for down, 0 for none
+let navigationTimeout = null;
+let lastScrollTime = 0;
+let scrollMomentum = 0;
+
+// Initialize horizontal navigation
+function initHorizontalNavigation() {
+    const container = document.querySelector('.horizontal-container');
+    const navDots = document.querySelectorAll('.nav-dot');
+    
+    function updateNavigation() {
+        // Update container position
+        const translateX = -currentSection * 100;
+        container.style.transform = `translateX(${translateX}vw)`;
+        
+        // Update scroll progress
+        const progress = (currentSection / (totalSections - 1)) * 100;
+        document.querySelector('.scroll-progress-bar').style.width = `${progress}%`;
+        
+        // Update active states
+        document.querySelectorAll('.horizontal-section').forEach((section, index) => {
+            section.classList.toggle('active', index === currentSection);
+        });
+        
+        navDots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentSection);
+        });
+        
+        // Update active nav link
+        updateActiveNavLink();
+    }
+    
+    function goToSection(index) {
+        if (index >= 0 && index < totalSections && index !== currentSection) {
+            console.log(`Enhanced navigation: section ${currentSection} → ${index} (${sectionNames[index]})`);
+            
+            // Clear any pending buffer state when navigating
+            resetScrollBuffer();
+            
+            currentSection = index;
+            updateNavigation();
+        } else if (index === currentSection) {
+            console.log(`Already at section ${index}, no navigation needed`);
+        } else {
+            console.log(`Invalid section index: ${index}. Valid range: 0-${totalSections - 1}`);
+        }
+    }
+    
+    // Navigation dot clicks
+    navDots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            console.log(`Nav dot clicked: ${index}`);
+            goToSection(index);
+        });
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            goToSection(currentSection - 1);
+        } else if (e.key === 'ArrowRight') {
+            goToSection(currentSection + 1);
+        }
+    });
+    
+    // Touch/swipe navigation
+    let startX = 0;
+    let isDragging = false;
+    
+    container.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+    });
+    
+    container.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+    });
+    
+    container.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        const endX = e.changedTouches[0].clientX;
+        const diff = startX - endX;
+        
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) {
+                goToSection(currentSection + 1); // Swipe left -> next
+            } else {
+                goToSection(currentSection - 1); // Swipe right -> previous
+            }
+        }
+    });
+    
+    // Enhanced scroll detection with buffer zones
+    let isNavigating = false;
+    
+    document.addEventListener('wheel', (e) => {
+        const target = e.target;
+        const sectionContent = target.closest('.section-content');
+        const currentTime = Date.now();
+        
+        // If scrolling inside a section content area
+        if (sectionContent) {
+            const scrollTop = sectionContent.scrollTop;
+            const scrollHeight = sectionContent.scrollHeight;
+            const clientHeight = sectionContent.clientHeight;
+            
+            const isAtTop = scrollTop === 0;
+            const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 1;
+            const scrollDirection = e.deltaY > 0 ? 1 : -1;
+            
+            // Allow normal scrolling if content is scrollable and not at boundaries
+            if (scrollHeight > clientHeight && !isAtTop && !isAtBottom) {
+                resetScrollBuffer();
+                return; // Let normal scroll happen
+            }
+            
+            // Handle buffer zone scrolling at boundaries
+            if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+                e.preventDefault();
+                handleBufferZoneScroll(e.deltaY, sectionContent, currentTime);
+            }
+        } else {
+            // Scrolling outside section content - navigate sections immediately
+            e.preventDefault();
+            resetScrollBuffer();
+            handleSectionNavigation(e.deltaY);
+        }
+    }, { passive: false });
+    
+    function handleBufferZoneScroll(deltaY, sectionContent, currentTime) {
+        const scrollDirection = deltaY > 0 ? 1 : -1;
+        const timeDelta = currentTime - lastScrollTime;
+        
+        // Calculate scroll momentum (pixels per millisecond)
+        scrollMomentum = timeDelta > 0 ? Math.abs(deltaY) / timeDelta : 0;
+        
+        // Reset buffer if direction changed or too much time passed
+        if (bufferDirection !== scrollDirection || timeDelta > 500) {
+            resetScrollBuffer();
+            bufferDirection = scrollDirection;
+        }
+        
+        // Accumulate scroll buffer with momentum weighting
+        const momentumMultiplier = Math.min(scrollMomentum / MOMENTUM_THRESHOLD, 2);
+        scrollBuffer += Math.abs(deltaY) * momentumMultiplier;
+        lastScrollTime = currentTime;
+        
+        // Update visual feedback
+        updateBufferVisualFeedback(sectionContent, scrollBuffer, scrollDirection);
+        
+        console.log(`Buffer: ${Math.round(scrollBuffer)}/${SCROLL_BUFFER_THRESHOLD}, momentum: ${momentumMultiplier.toFixed(2)}x`);
+        
+        // Clear existing navigation timeout
+        if (navigationTimeout) {
+            clearTimeout(navigationTimeout);
+        }
+        
+        // Dynamic delay based on momentum (faster scrolling = shorter delay)
+        const dynamicDelay = Math.max(NAVIGATION_DELAY - (scrollMomentum * 50), 100);
+        
+        // Check if buffer threshold is reached
+        if (scrollBuffer >= SCROLL_BUFFER_THRESHOLD) {
+            // Add delay before navigation to make it feel more intentional
+            navigationTimeout = setTimeout(() => {
+                console.log('Buffer threshold reached, navigating...');
+                resetScrollBuffer();
+                handleSectionNavigation(deltaY);
+            }, dynamicDelay);
+        }
+    }
+    
+    function resetScrollBuffer() {
+        scrollBuffer = 0;
+        bufferDirection = 0;
+        if (navigationTimeout) {
+            clearTimeout(navigationTimeout);
+            navigationTimeout = null;
+        }
+        // Clear visual feedback
+        document.querySelectorAll('.section-content').forEach(section => {
+            section.classList.remove('buffer-zone-top', 'buffer-zone-bottom');
+            section.style.removeProperty('--buffer-progress');
+        });
+    }
+    
+    function updateBufferVisualFeedback(sectionContent, buffer, direction) {
+        const progress = Math.min(buffer / SCROLL_BUFFER_THRESHOLD, 1);
+        
+        // Add visual feedback classes
+        sectionContent.classList.remove('buffer-zone-top', 'buffer-zone-bottom');
+        if (direction < 0) {
+            sectionContent.classList.add('buffer-zone-top');
+        } else {
+            sectionContent.classList.add('buffer-zone-bottom');
+        }
+        
+        // Set CSS custom property for progress indication
+        sectionContent.style.setProperty('--buffer-progress', progress);
+        
+        // Show visual hint when approaching threshold
+        if (buffer >= BUFFER_VISUAL_THRESHOLD) {
+            console.log(`Showing visual hint - ${Math.round(progress * 100)}% to navigation`);
+        }
+    }
+    
+    function handleSectionNavigation(deltaY) {
+        if (isNavigating) return;
+        
+        isNavigating = true;
+        
+        // Add smooth easing transition
+        const container = document.querySelector('.horizontal-container');
+        container.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        
+        if (deltaY > 0) {
+            goToSection(currentSection + 1);
+        } else {
+            goToSection(currentSection - 1);
+        }
+        
+        // Reset navigation flag with enhanced timing
+        setTimeout(() => {
+            isNavigating = false;
+            // Reset to default transition for other interactions
+            container.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        }, 800);
+    }
+    
+    // Navigation menu clicks
+    
+    // Navigation menu clicks - improved with better debugging
+    const navLinks = document.querySelectorAll('.nav-links a[data-section]');
+    console.log(`Found ${navLinks.length} navigation links`);
+    
+    navLinks.forEach((link, index) => {
+        const sectionIndex = parseInt(link.getAttribute('data-section'));
+        console.log(`Setting up nav link ${index}: ${link.textContent} → section ${sectionIndex}`);
+        
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling
+            
+            console.log(`Nav click: "${link.textContent}" → section ${sectionIndex} (${sectionNames[sectionIndex]})`);
+            console.log(`Current section: ${currentSection}`);
+            
+            goToSection(sectionIndex);
+        });
+    });
+    
+    // Update active nav link
+    function updateActiveNavLink() {
+        navLinks.forEach((link) => {
+            const linkSection = parseInt(link.getAttribute('data-section'));
+            const isActive = linkSection === currentSection;
+            link.classList.toggle('active', isActive);
+            if (isActive) {
+                console.log(`Active nav link: ${link.textContent} (section ${linkSection})`);
             }
         });
-        console.log('PRs response status:', prsResponse.status);
+    }
+    
+    // Initialize
+    updateNavigation();
+}
 
-        if (!prsResponse.ok) {
-            throw new Error(`PRs API failed: ${prsResponse.status} ${prsResponse.statusText}`);
-        }
-
-        const prsData = await prsResponse.json();
-        console.log('PRs data:', prsData);
-
-        let reposToShow = specificRepos;
-        if (!reposToShow || reposToShow.length === 0) {
-            console.log('No specific repos found, fetching general repos...');
-            const reposResponse = await fetch(`${GITHUB_API_BASE}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6&type=public`, {
-                headers: {
-                    'User-Agent': 'Jose-Portfolio/1.0'
-                }
-            });
-            if (!reposResponse.ok) {
-                throw new Error(`Repos API failed: ${reposResponse.status} ${reposResponse.statusText}`);
-            }
-            const reposData = await reposResponse.json();
-            reposToShow = reposData.slice(0, 6);
-        }
-
-        console.log('Rendering projects with repos:', reposToShow);
-        renderProjects(reposToShow);
-        renderPullRequests(prsData.items);
-
-    } catch (error) {
-        console.error('Error fetching GitHub data:', error);
-
-        document.getElementById('projects-list').innerHTML = '<div class="loading">Unable to load GitHub data. Please check the console for details.</div>';
-        document.getElementById('pull-requests').innerHTML = '<div class="loading">Unable to load pull requests. Please check the console for details.</div>';
+// Show loading skeleton for GitHub data
+function showGitHubLoadingSkeleton() {
+    const projectsList = document.getElementById('projects-list');
+    const pullRequests = document.getElementById('pull-requests');
+    
+    if (projectsList) {
+        projectsList.innerHTML = `
+            <div class="github-loading">
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-text medium"></div>
+                    <div class="skeleton skeleton-text short"></div>
+                    <div class="skeleton skeleton-text long"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-text medium"></div>
+                    <div class="skeleton skeleton-text short"></div>
+                    <div class="skeleton skeleton-text long"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-text medium"></div>
+                    <div class="skeleton skeleton-text short"></div>
+                    <div class="skeleton skeleton-text long"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    if (pullRequests) {
+        pullRequests.innerHTML = `
+            <div class="github-loading">
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-text medium"></div>
+                    <div class="skeleton skeleton-text short"></div>
+                    <div class="skeleton skeleton-text long"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-text medium"></div>
+                    <div class="skeleton skeleton-text short"></div>
+                    <div class="skeleton skeleton-text long"></div>
+                </div>
+            </div>
+        `;
     }
 }
 
-async function fetchSpecificRepositories() {
-    const repoNames = ['dsa-rs', 'smol-evm', 'coding-interview-patterns', 'merkle-tree-rs'];
-    console.log('Fetching specific repositories:', repoNames);
-
+async function fetchGitHubData() {
+    console.log('🔄 Starting enhanced GitHub data fetch...');
+    
+    // Show loading skeletons immediately
+    showGitHubLoadingSkeleton();
+    
     try {
-        const repoPromises = repoNames.map(async (repoName) => {
-            console.log(`Fetching repo: ${repoName}`);
-            const response = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_USERNAME}/${repoName}`, {
-                headers: {
-                    'User-Agent': 'Jose-Portfolio/1.0'
-                }
-            });
-            console.log(`Response for ${repoName}:`, response.status);
-
-            if (response.ok) {
-                return await response.json();
+        // Check API rate limit first
+        const rateLimitResponse = await fetch(`${GITHUB_API_BASE}/rate_limit`, {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'Jose-Portfolio/1.0'
             }
-            return null;
+        });
+        
+        if (rateLimitResponse.ok) {
+            const rateLimitData = await rateLimitResponse.json();
+            console.log('📊 GitHub API Rate Limit:', rateLimitData.rate);
+            
+            if (rateLimitData.rate.remaining < 10) {
+                const resetTime = new Date(rateLimitData.rate.reset * 1000);
+                console.warn('⚠️ GitHub API rate limit nearly exceeded. Resets at:', resetTime);
+                throw new Error(`GitHub API rate limit exceeded. Resets at ${resetTime.toLocaleTimeString()}`);
+            }
+        }
+
+        // Updated repository names - let's try a different approach
+        const repoNames = ['dsa-rs', 'smol-evm', 'coding-interview-patterns', 'merkle-tree-rs'];
+        console.log('📦 Fetching specific repositories:', repoNames);
+        
+        // Fetch repositories with detailed logging
+        const repoPromises = repoNames.map(async (repoName) => {
+            try {
+                const repoUrl = `${GITHUB_API_BASE}/repos/${GITHUB_USERNAME}/${repoName}`;
+                console.log(`🔍 Fetching: ${repoUrl}`);
+                
+                const response = await fetch(repoUrl, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'Jose-Portfolio/1.0',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                console.log(`📡 Response for ${repoName}:`, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
+                if (response.ok) {
+                    const repo = await response.json();
+                    console.log(`✅ Successfully fetched: ${repoName}`, {
+                        name: repo.name,
+                        stars: repo.stargazers_count,
+                        language: repo.language,
+                        updated: repo.updated_at
+                    });
+                    return repo;
+                } else if (response.status === 404) {
+                    console.warn(`❌ Repository not found: ${repoName} - trying fallback`);
+                    return null;
+                } else if (response.status === 403) {
+                    console.warn(`🚫 Rate limited for ${repoName}:`, response.status, response.statusText);
+                    const rateLimitReset = response.headers.get('x-ratelimit-reset');
+                    if (rateLimitReset) {
+                        const resetTime = new Date(parseInt(rateLimitReset) * 1000);
+                        console.warn(`Rate limit resets at: ${resetTime.toLocaleTimeString()}`);
+                    }
+                    return null;
+                } else {
+                    console.warn(`❌ Failed to fetch ${repoName}:`, response.status, response.statusText);
+                    return null;
+                }
+            } catch (error) {
+                console.error(`❌ Network error fetching ${repoName}:`, error);
+                return null;
+            }
         });
 
-        const repos = await Promise.all(repoPromises);
-        const filteredRepos = repos.filter(repo => repo !== null);
-        console.log('Filtered repos:', filteredRepos);
-        return filteredRepos;
+        // Fetch user's public repositories as fallback
+        console.log('� Fetching user public repositories as fallback...');
+        let fallbackRepos = [];
+        try {
+            const userReposResponse = await fetch(`${GITHUB_API_BASE}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=10&type=public`, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'Jose-Portfolio/1.0',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            console.log('📡 User repos response:', userReposResponse.status, userReposResponse.statusText);
+            
+            if (userReposResponse.ok) {
+                fallbackRepos = await userReposResponse.json();
+                console.log(`� Found ${fallbackRepos.length} user repositories as fallback`);
+            }
+        } catch (error) {
+            console.warn('❌ Failed to fetch user repositories:', error);
+        }
+
+        // Fetch pull requests with enhanced error handling
+        console.log('🔄 Fetching pull requests...');
+        let prsData = { items: [] };
+        try {
+            const prsUrl = `${GITHUB_API_BASE}/search/issues?q=author:${GITHUB_USERNAME}+type:pr&sort=updated&per_page=15`;
+            console.log(`🔍 Fetching PRs: ${prsUrl}`);
+            
+            const prsResponse = await fetch(prsUrl, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'Jose-Portfolio/1.0',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+
+            console.log('📡 PRs response:', {
+                status: prsResponse.status,
+                statusText: prsResponse.statusText,
+                rateLimitRemaining: prsResponse.headers.get('x-ratelimit-remaining')
+            });
+
+            if (prsResponse.ok) {
+                prsData = await prsResponse.json();
+                console.log(`📊 Found ${prsData.items?.length || 0} pull requests`);
+            } else {
+                console.warn('❌ Failed to fetch pull requests:', prsResponse.status, prsResponse.statusText);
+            }
+        } catch (error) {
+            console.error('❌ Error fetching pull requests:', error);
+        }
+
+        // Fetch contributed repositories with alternative API
+        console.log('� Fetching contributed repositories...');
+        let contributedReposData = { items: [] };
+        try {
+            // Try multiple approaches for contributed repos
+            const contributedApproaches = [
+                // Approach 1: Search for repos with your contributions
+                `${GITHUB_API_BASE}/search/repositories?q=committer:${GITHUB_USERNAME}&sort=updated&per_page=20`,
+                // Approach 2: Search for repos mentioning you
+                `${GITHUB_API_BASE}/search/repositories?q=${GITHUB_USERNAME}+in:readme&sort=updated&per_page=20`
+            ];
+
+            for (const [index, url] of contributedApproaches.entries()) {
+                console.log(`� Trying contributed repos approach ${index + 1}: ${url}`);
+                
+                const contributedReposResponse = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'Jose-Portfolio/1.0',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                console.log(`📡 Contributed repos response (approach ${index + 1}):`, {
+                    status: contributedReposResponse.status,
+                    statusText: contributedReposResponse.statusText
+                });
+
+                if (contributedReposResponse.ok) {
+                    contributedReposData = await contributedReposResponse.json();
+                    console.log(`� Found ${contributedReposData.items?.length || 0} contributed repositories (approach ${index + 1})`);
+                    if (contributedReposData.items?.length > 0) {
+                        break; // Use first successful approach
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error fetching contributed repositories:', error);
+        }
+
+        // Process results
+        const specificRepos = (await Promise.all(repoPromises)).filter(repo => repo !== null);
+        let reposToShow = specificRepos;
+
+        // Use fallback if no specific repos found
+        if (reposToShow.length === 0) {
+            console.log('📦 Using fallback repositories...');
+            reposToShow = fallbackRepos
+                .filter(repo => !repo.fork) // Exclude forks
+                .sort((a, b) => (b.stargazers_count + b.forks_count) - (a.stargazers_count + a.forks_count))
+                .slice(0, 6);
+        }
+
+        console.log('✅ GitHub data fetch completed');
+        console.log(`📊 Final results: ${reposToShow.length} repos, ${prsData.items?.length || 0} PRs, ${contributedReposData.items?.length || 0} contributed repos`);
+        
+        // Render the data
+        renderProjects(reposToShow);
+        renderPullRequestsWithContributions(prsData.items || [], contributedReposData.items || []);
 
     } catch (error) {
-        console.error('Error fetching specific repositories:', error);
-        return null;
+        console.error('❌ Critical error fetching GitHub data:', error);
+        
+        document.getElementById('projects-list').innerHTML = 
+            `<div class="loading">❌ Unable to load GitHub data: ${error.message}<br><small>Check browser console for details</small></div>`;
+        document.getElementById('pull-requests').innerHTML = 
+            `<div class="loading">❌ Unable to load contributions: ${error.message}<br><small>Check browser console for details</small></div>`;
     }
 }
 
 function renderProjects(repos) {
     const projectsList = document.getElementById('projects-list');
     
+    console.log('🎨 Rendering projects:', repos);
+    
     if (!repos || repos.length === 0) {
-        projectsList.innerHTML = '<div class="loading">No repositories found.</div>';
+        projectsList.innerHTML = `
+            <div class="loading">
+                📦 No repositories found. 
+                <br><small>This might be due to API rate limits or repository privacy settings.</small>
+                <br><small>Check the browser console for more details.</small>
+            </div>`;
         return;
     }
 
+    // Filter and sort repositories
     const filteredRepos = repos
-        .filter(repo => !repo.fork || repo.stargazers_count > 0)
-        .sort((a, b) => (b.stargazers_count + b.forks_count) - (a.stargazers_count + a.forks_count))
+        .filter(repo => {
+            const isValidRepo = repo && repo.name && repo.html_url;
+            if (!isValidRepo) {
+                console.warn('⚠️ Filtering out invalid repo:', repo);
+            }
+            return isValidRepo;
+        })
+        .filter(repo => !repo.fork || repo.stargazers_count > 0) // Keep popular forks
+        .sort((a, b) => {
+            // Sort by stars + forks, then by update date
+            const aScore = (a.stargazers_count || 0) + (a.forks_count || 0);
+            const bScore = (b.stargazers_count || 0) + (b.forks_count || 0);
+            if (aScore !== bScore) return bScore - aScore;
+            return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+        })
         .slice(0, 8);
+
+    console.log('🎨 Filtered and sorted repos:', filteredRepos.map(r => ({
+        name: r.name,
+        stars: r.stargazers_count,
+        forks: r.forks_count,
+        language: r.language
+    })));
+
+    if (filteredRepos.length === 0) {
+        projectsList.innerHTML = `
+            <div class="loading">
+                📦 No valid repositories to display after filtering.
+                <br><small>Repositories might be private or have API access issues.</small>
+            </div>`;
+        return;
+    }
 
     projectsList.innerHTML = filteredRepos.map(repo => `
         <div class="project-item">
@@ -104,47 +592,209 @@ function renderProjects(repos) {
                 ${repo.description || 'No description available.'}
             </div>
             <div class="project-stats">
-                ★ ${repo.stargazers_count} • ⑂ ${repo.forks_count}
-                ${repo.topics && repo.topics.length > 0 ? ' • ' + repo.topics.slice(0, 3).join(', ') : ''}
+                ⭐ ${repo.stargazers_count || 0} • 🍴 ${repo.forks_count || 0}
+                ${repo.topics && repo.topics.length > 0 ? ' • 🏷️ ' + repo.topics.slice(0, 3).join(', ') : ''}
             </div>
         </div>
     `).join('');
+    
+    console.log('✅ Projects rendered successfully');
 }
 
-function renderPullRequests(prs) {
+function renderPullRequestsWithContributions(prs, contributedRepos) {
     const prContainer = document.getElementById('pull-requests');
     
+    console.log('🎨 Rendering pull requests and contributions...');
+    console.log('📊 Input data:', {
+        prs: prs?.length || 0,
+        contributedRepos: contributedRepos?.length || 0
+    });
+    
+    let html = '';
+    
+    // Add contributed repositories section with better filtering
+    if (contributedRepos && contributedRepos.length > 0) {
+        console.log('🔍 Processing contributed repositories:', contributedRepos);
+        
+        const filteredContributions = contributedRepos
+            .filter(repo => {
+                const isValid = repo && repo.html_url && repo.full_name;
+                const isNotOwn = repo.owner && repo.owner.login !== GITHUB_USERNAME;
+                const isNotFork = !repo.fork; // Prefer original repos
+                
+                console.log(`📋 Repo ${repo.full_name || 'unknown'}:`, {
+                    isValid,
+                    isNotOwn,
+                    isNotFork,
+                    owner: repo.owner?.login
+                });
+                
+                return isValid && isNotOwn;
+            })
+            .sort((a, b) => {
+                // Sort by stars, then by update date
+                const aStars = a.stargazers_count || 0;
+                const bStars = b.stargazers_count || 0;
+                if (aStars !== bStars) return bStars - aStars;
+                return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+            })
+            .slice(0, 6); // Limit to 6 most relevant
+            
+        console.log('✅ Filtered contributed repos:', filteredContributions.map(r => ({
+            name: r.full_name,
+            stars: r.stargazers_count,
+            owner: r.owner?.login
+        })));
+
+        if (filteredContributions.length > 0) {
+            html += `
+                <div class="contributions-section">
+                    <h4> Repos Contributed To</h4>
+                    <div class="contributed-repos-grid">
+                        ${filteredContributions.map(repo => `
+                            <div class="contributed-repo-item">
+                                <a href="${repo.html_url}" target="_blank" class="repo-title">
+                                    ${repo.full_name}
+                                </a>
+                                <div class="repo-meta">
+                                    ${repo.language || 'Mixed'} • ⭐ ${repo.stargazers_count || 0}
+                                    ${repo.fork ? ' • Fork' : ''}
+                                </div>
+                                <div class="repo-description">
+                                    ${repo.description ? 
+                                        (repo.description.length > 100 ? 
+                                            repo.description.substring(0, 100) + '...' : 
+                                            repo.description
+                                        ) : 
+                                        'No description available.'
+                                    }
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 2rem;">Recent Pull Requests</h4>
+            `;
+        } else {
+            console.log('ℹ️ No valid contributed repositories to display');
+            html += `
+                <div class="contributions-section">
+                    <h4>🤝 Repositories I've Contributed To</h4>
+                    <div class="loading">
+                        🔍 No contributed repositories found via API search.
+                        <br><small>This might be due to API limitations or privacy settings.</small>
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 2rem;">📝 Recent Pull Requests</h4>
+            `;
+        }
+    } else {
+        console.log('ℹ️ No contributed repositories data provided');
+        html += `
+            <div class="contributions-section">
+                <h4>🤝 Repositories I've Contributed To</h4>
+                <div class="loading">
+                    📡 Unable to load contributed repositories.
+                    <br><small>Check browser console for API details.</small>
+                </div>
+            </div>
+            
+            <h4 style="margin-top: 2rem;">📝 Recent Pull Requests</h4>
+        `;
+    }
+    
+    // Add pull requests section
     if (!prs || prs.length === 0) {
-        prContainer.innerHTML = '<div class="loading">No pull requests found.</div>';
+        html += '<div class="loading">No pull requests found.</div>';
+        prContainer.innerHTML = html;
         return;
     }
 
-    prContainer.innerHTML = prs.map(pr => {
-        let statusText = '';
-        let statusClass = '';
+    console.log('🔍 Processing pull requests:', prs.length);
+    
+    // Set initial content while loading detailed PR info
+    prContainer.innerHTML = html + '<div class="loading">🔄 Loading pull request details...</div>';
 
-        if (pr.state === 'open') {
-            statusText = 'Open';
-            statusClass = 'status-open';
-        } else if (pr.merged_at) {
-            statusText = 'Merged';
-            statusClass = 'status-merged';
-        } else {
-            statusText = 'Closed';
-            statusClass = 'status-closed';
+    // Fetch detailed PR information for accurate status
+    const prPromises = prs.slice(0, 10).map(async (pr, index) => {
+        try {
+            console.log(`📡 Fetching PR details ${index + 1}/${Math.min(10, prs.length)}: ${pr.title}`);
+            
+            const prDetailResponse = await fetch(pr.pull_request.url, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'Jose-Portfolio/1.0'
+                }
+            });
+            
+            if (prDetailResponse.ok) {
+                const prDetail = await prDetailResponse.json();
+                return {
+                    ...pr,
+                    merged_at: prDetail.merged_at,
+                    merged: prDetail.merged
+                };
+            } else {
+                console.warn(`⚠️ Failed to fetch PR details for: ${pr.title}`);
+            }
+        } catch (error) {
+            console.warn('❌ Error fetching PR details:', error);
         }
+        return pr;
+    });
 
-        return `
-        <div class="pr-item">
-            <span class="pr-status ${statusClass}">
-                ${statusText}
-            </span>
-            <a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a>
-            <div class="pr-meta">
-                ${extractRepo(pr.repository_url)} • ${formatDate(pr.updated_at)}
+    Promise.all(prPromises).then(detailedPrs => {
+        console.log('✅ All PR details fetched, rendering...');
+        
+        const prHtml = detailedPrs.map(pr => {
+            let status, statusClass;
+            if (pr.state === 'open') {
+                status = 'Open';
+                statusClass = 'status-open';
+            } else if (pr.merged_at || pr.merged) {
+                status = 'Merged';
+                statusClass = 'status-merged';
+            } else {
+                status = 'Closed';
+                statusClass = 'status-closed';
+            }
+            
+            return `
+                <div class="pr-item">
+                    <span class="pr-status ${statusClass}">
+                        ${status}
+                    </span>
+                    <a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a>
+                    <div class="pr-meta">
+                        ${extractRepo(pr.repository_url)} • ${formatDate(pr.updated_at)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        prContainer.innerHTML = html + `<div class="pr-grid">${prHtml}</div>`;
+        console.log('✅ Pull requests rendered successfully');
+    }).catch(error => {
+        console.error('❌ Error processing PR details:', error);
+        
+        // Fallback rendering without detailed status
+        const fallbackPrHtml = prs.slice(0, 10).map(pr => `
+            <div class="pr-item">
+                <span class="pr-status ${pr.state === 'open' ? 'status-open' : 'status-merged'}">
+                    ${pr.state === 'open' ? 'Open' : 'Merged'}
+                </span>
+                <a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a>
+                <div class="pr-meta">
+                    ${extractRepo(pr.repository_url)} • ${formatDate(pr.updated_at)}
+                </div>
             </div>
-        </div>
-    `}).join('');
+        `).join('');
+        
+        prContainer.innerHTML = html + `<div class="pr-grid">${fallbackPrHtml}</div>`;
+        console.log('✅ Pull requests rendered with fallback');
+    });
 }
 
 function extractRepo(url) {
@@ -194,29 +844,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     themeToggle.addEventListener('click', toggleTheme);
 
+    // Initialize horizontal navigation
+    initHorizontalNavigation();
+
     function updateScrollProgress() {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrollPercent = (scrollTop / scrollHeight) * 100;
-        
+        // Now handled by horizontal navigation
+        const progress = (currentSection / (totalSections - 1)) * 100;
         const progressBar = document.querySelector('.scroll-progress-bar');
         if (progressBar) {
-            progressBar.style.width = scrollPercent + '%';
+            progressBar.style.width = progress + '%';
         }
     }
 
-    // Throttle scroll events for better performance
-    let scrollThrottleTimer = null;
-    window.addEventListener('scroll', function() {
-        if (!scrollThrottleTimer) {
-            scrollThrottleTimer = setTimeout(function() {
-                updateScrollProgress();
-                scrollThrottleTimer = null;
-            }, 10);
-        }
+    // Update progress when section changes
+    const observer = new MutationObserver(() => {
+        updateScrollProgress();
     });
+    
+    const progressBar = document.querySelector('.scroll-progress-bar');
+    if (progressBar) {
+        observer.observe(progressBar, { attributes: true, attributeFilter: ['style'] });
+    }
+});
 
-    updateScrollProgress();
+// Initialize cryptographic background when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing cryptographic background...');
+    const container = document.getElementById('cryptoBackground');
+    if (container) {
+        console.log('Container found, creating CryptographicBackground instance');
+        new CryptographicBackground();
+    } else {
+        console.error('Cryptographic background container not found!');
+    }
+
+    // Fetch GitHub data when page loads
+    fetchGitHubData();
 });
 
 let startY = 0;
@@ -435,6 +1098,118 @@ class CryptographicBackground {
     }
 }
 
+// Mobile menu functionality
+function initMobileMenu() {
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    const body = document.body;
+    
+    // Create mobile overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'mobile-overlay';
+    body.appendChild(overlay);
+    
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+        const isOpen = navLinks.classList.contains('mobile-open');
+        
+        if (isOpen) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    }
+    
+    function openMobileMenu() {
+        mobileToggle.classList.add('active');
+        navLinks.classList.add('mobile-open');
+        overlay.classList.add('active');
+        body.style.overflow = 'hidden';
+        
+        // Set ARIA attributes for accessibility
+        mobileToggle.setAttribute('aria-expanded', 'true');
+        navLinks.setAttribute('aria-hidden', 'false');
+    }
+    
+    function closeMobileMenu() {
+        mobileToggle.classList.remove('active');
+        navLinks.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+        body.style.overflow = '';
+        
+        // Set ARIA attributes for accessibility
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        navLinks.setAttribute('aria-hidden', 'true');
+    }
+    
+    // Event listeners
+    mobileToggle.addEventListener('click', toggleMobileMenu);
+    overlay.addEventListener('click', closeMobileMenu);
+    
+    // Close menu when clicking nav links
+    navLinks.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') {
+            closeMobileMenu();
+        }
+    });
+    
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navLinks.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        }
+    });
+    
+    // Set initial ARIA attributes
+    mobileToggle.setAttribute('aria-expanded', 'false');
+    mobileToggle.setAttribute('aria-label', 'Toggle navigation menu');
+    navLinks.setAttribute('aria-hidden', 'true');
+}
+
+// Enhanced visual effects and micro-interactions
+function initVisualEnhancements() {
+    // Intersection Observer for section animations
+    const sectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    // Observe all sections
+    document.querySelectorAll('.section').forEach(section => {
+        sectionObserver.observe(section);
+    });
+
+    // Add interactive pulse effect to clickable elements
+    document.querySelectorAll('.project-card, .skill-item, .social-icon').forEach(element => {
+        element.classList.add('interactive-pulse');
+    });
+
+    // Add card hover effects
+    document.querySelectorAll('.project-card, .pull-request').forEach(card => {
+        card.classList.add('card-hover-effect');
+    });
+
+    // Enhanced buffer zone visual feedback
+    const bufferIndicators = document.querySelectorAll('.buffer-indicator');
+    window.addEventListener('scroll', () => {
+        const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+        bufferIndicators.forEach((indicator, index) => {
+            const sectionPercent = index / (bufferIndicators.length - 1);
+            if (Math.abs(scrollPercent - sectionPercent) < 0.1) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+    });
+}
+
 // Initialize cryptographic background when page loads
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing cryptographic background...');
@@ -444,6 +1219,20 @@ document.addEventListener('DOMContentLoaded', () => {
         new CryptographicBackground();
     } else {
         console.error('Cryptographic background container not found!');
+    }
+
+    // Initialize mobile menu
+    initMobileMenu();
+
+    // Initialize visual enhancements
+    initVisualEnhancements();
+
+    // Show page with fade-in effect
+    const horizontalContainer = document.querySelector('.horizontal-container');
+    if (horizontalContainer) {
+        setTimeout(() => {
+            horizontalContainer.classList.add('loaded');
+        }, 100);
     }
 
     // Fetch GitHub data when page loads

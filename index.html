@@ -7,6 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Critical resource preloads for performance -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    <link rel="preconnect" href="https://api.github.com" crossorigin>
+    <link rel="dns-prefetch" href="//api.github.com">
+    
+    <!-- Critical CSS inline for faster rendering -->
+    <style>
+        body { margin: 0; font-family: 'Inter', sans-serif; }
+        .horizontal-container { opacity: 0; transition: opacity 0.3s ease; }
+        .horizontal-container.loaded { opacity: 1; }
+    </style>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,42 +30,63 @@
     
     <!-- Cryptographic Background -->
     <div class="crypto-background" id="cryptoBackground"></div>
+    <!-- Navigation Dots -->
+    <nav class="nav-dots">
+        <button class="nav-dot active" data-section="0" aria-label="About" title="About"></button>
+        <button class="nav-dot" data-section="1" aria-label="Technologies" title="Technologies"></button>
+        <button class="nav-dot" data-section="2" aria-label="Experience" title="Experience"></button>
+        <button class="nav-dot" data-section="3" aria-label="Projects" title="Projects"></button>
+        <button class="nav-dot" data-section="4" aria-label="Open Source" title="Open Source"></button>
+        <button class="nav-dot" data-section="5" aria-label="Blog" title="Blog"></button>
+    </nav>
+
     <header>
-        <h1>Jose Velázquez</h1>
-        <p class="subtitle">Software Engineer</p>
-        <nav class="nav-links">
-            <a href="#about">About</a>
-            <a href="#technologies">Technologies</a>
-            <a href="#experience">Experience</a>
-            <a href="#projects">Projects</a>
-            <a href="#blog">Blog</a>
-            <a href="#opensource">Open Source</a>
-            <a href="mailto:josev9@proton.me">Contact</a>
-        </nav>
-        
-        <div class="social-links">
-            <a href="https://github.com/Peponks9" target="_blank" class="social-link" title="GitHub">
-                <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-            </a>
-            <a href="https://www.linkedin.com/in/jose-veos/" target="_blank" class="social-link" title="LinkedIn">
-                <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-            </a>
-            <a href="https://twitter.com/josev9_" target="_blank" class="social-link" title="X (Twitter)">
-                <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-            </a>
-            <a href="https://paragraph.com/@josev" target="_blank" class="social-link" title="Blog">
-                <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                    <path d="M0 0h24v24H0z" fill="none"/>
-                </svg>
-            </a>
+        <div class="header-content">
+            <h1>Jose Velázquez</h1>
+            <p class="subtitle">Software Engineer</p>
+            
+            <div class="social-links">
+                <a href="https://github.com/Peponks9" target="_blank" class="social-link" title="GitHub">
+                    <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+                <a href="https://www.linkedin.com/in/jose-veos/" target="_blank" class="social-link" title="LinkedIn">
+                    <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                </a>
+                <a href="https://twitter.com/josev9_" target="_blank" class="social-link" title="X (Twitter)">
+                    <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                </a>
+                <a href="https://paragraph.com/@josev" target="_blank" class="social-link" title="Blog">
+                    <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                    </svg>
+                </a>
+            </div>
+            
+            <!-- Mobile hamburger menu -->
+            <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <nav class="nav-links">
+                <a href="#about" data-section="0">About</a>
+                <a href="#technologies" data-section="1">Technologies</a>
+                <a href="#experience" data-section="2">Experience</a>
+                <a href="#projects" data-section="3">Projects</a>
+                <a href="#opensource" data-section="4">Open Source</a>
+                <a href="#blog" data-section="5">Blog</a>
+                <a href="mailto:josev9@proton.me">Contact</a>
+            </nav>
         </div>
+        
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" role="switch" aria-checked="false">
             <span class="toggle-track">
                 <span class="toggle-icon toggle-icon-light">☀️</span>
@@ -60,19 +94,21 @@
                 <span class="toggle-knob"></span>
             </span>
         </button>
-    </header>
-
-    <main>
-        <section id="about">
-            <h2>About</h2>
-            <div class="about-content">
-                <p>I am a software engineer with a passion for building innovative decentralized systems. I enjoy working with Rust and contributing to cutting-edge projects that push the boundaries of what's possible.</p>
-                <p>My interests include blockchain, cryptography and AI. I believe humans excel at orchestrating great solutions to complex problems.</p>
+    </header>    <!-- Horizontal Sections Container -->
+    <main class="horizontal-container">
+        <section class="horizontal-section active" id="about">
+            <div class="section-content">
+                <h2>About</h2>
+                <div class="about-content">
+                    <p>Software Engineer with a passion for building innovative solutions in the decentralized space. I enjoy working with Rust and contributing to cutting-edge projects that push the boundaries of what's possible.</p>
+                    <p>My interests include blockchain, cryptography and AI. I believe humans excel at orchestrating great solutions to complex problems.</p>
+                </div>
             </div>
         </section>
 
-        <section id="technologies">
-            <h2>Technologies</h2>
+        <section class="horizontal-section" id="technologies">
+            <div class="section-content">
+                <h2>Technologies</h2>
             <div class="technologies-grid">
                 <div class="tech-category">
                     <h4>Programming Languages</h4>
@@ -88,6 +124,7 @@
                     <ul class="skills-list">
                         <li>Tokio</li>
                         <li>Serde</li>
+                        <li>Axum</li>
                     </ul>
                 </div>
 
@@ -113,8 +150,9 @@
             </div>
         </section>
 
-        <section id="experience">
-            <h2>Experience</h2>
+        <section class="horizontal-section" id="experience">
+            <div class="section-content">
+                <h2>Experience</h2>
             
             <div class="experience-item">
                 <h3>Smart Contract Engineer Jr</h3>
@@ -159,29 +197,35 @@
             </div>
         </section>
 
-        <section id="projects">
-            <h2>Projects</h2>
-            
-            <div id="projects-list">
-                <div class="loading">Loading projects from GitHub...</div>
+        <section class="horizontal-section" id="projects">
+            <div class="section-content">
+                <h2>Projects</h2>
+                
+                <div id="projects-list">
+                    <div class="loading">Loading projects from GitHub...</div>
+                </div>
             </div>
         </section>
 
-        <section id="blog">
-            <h2>Blog</h2>
-            <div class="blog-section">
-                <h3>Latest Thoughts</h3>
-                <p>I write about software development, cryptography, and dive deep into blockchain.</p>
-                <p><a href="https://paragraph.com/@josev" class="blog-link" target="_blank">Read my blog on Paragraph →</a></p>
+        <section class="horizontal-section" id="opensource">
+            <div class="section-content">
+                <h2>Open Source Contributions</h2>
+                <div>
+                    <h3>Recent Pull Requests</h3>
+                    <div id="pull-requests">
+                        <div class="loading">Loading pull requests from GitHub...</div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="opensource">
-            <h2>Open Source Contributions</h2>
-            <div>
-                <h3>Recent Pull Requests</h3>
-                <div id="pull-requests">
-                    <div class="loading">Loading pull requests from GitHub...</div>
+        <section class="horizontal-section" id="blog">
+            <div class="section-content">
+                <h2>Blog</h2>
+                <div class="blog-section">
+                    <h3>Latest Thoughts</h3>
+                    <p>I write about software development, cryptography, and dive deep into blockchain.</p>
+                    <p><a href="https://paragraph.com/@josev" class="blog-link" target="_blank">Read my blog on Paragraph →</a></p>
                 </div>
             </div>
         </section>
