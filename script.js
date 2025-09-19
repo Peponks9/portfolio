@@ -1,41 +1,33 @@
-// GitHub API configuration
 const GITHUB_USERNAME = 'Peponks9'; 
 const GITHUB_API_BASE = 'https://api.github.com';
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
-// Horizontal navigation
 let currentSection = 0;
 const totalSections = 6;
 const sectionNames = ['about', 'technologies', 'experience', 'projects', 'opensource', 'blog'];
 
-// Enhanced scroll behavior constants
-const SCROLL_BUFFER_THRESHOLD = 120; // pixels of extra scroll before navigation
-const NAVIGATION_DELAY = 250; // ms delay before navigation triggers
-const BUFFER_VISUAL_THRESHOLD = 80; // pixels before showing visual feedback
-const MOMENTUM_THRESHOLD = 5; // minimum scroll speed for momentum detection
+const SCROLL_BUFFER_THRESHOLD = 120;
+const NAVIGATION_DELAY = 250;
+const BUFFER_VISUAL_THRESHOLD = 80;
+const MOMENTUM_THRESHOLD = 5;
 
-// Scroll buffer tracking
 let scrollBuffer = 0;
-let bufferDirection = 0; // -1 for up, 1 for down, 0 for none
+let bufferDirection = 0;
 let navigationTimeout = null;
 let lastScrollTime = 0;
 let scrollMomentum = 0;
 
-// Initialize horizontal navigation
 function initHorizontalNavigation() {
     const container = document.querySelector('.horizontal-container');
     const navDots = document.querySelectorAll('.nav-dot');
     
     function updateNavigation() {
-        // Update container position
         const translateX = -currentSection * 100;
         container.style.transform = `translateX(${translateX}vw)`;
         
-        // Update scroll progress
         const progress = (currentSection / (totalSections - 1)) * 100;
         document.querySelector('.scroll-progress-bar').style.width = `${progress}%`;
         
-        // Update active states
         document.querySelectorAll('.horizontal-section').forEach((section, index) => {
             section.classList.toggle('active', index === currentSection);
         });
@@ -44,35 +36,23 @@ function initHorizontalNavigation() {
             dot.classList.toggle('active', index === currentSection);
         });
         
-        // Update active nav link
         updateActiveNavLink();
     }
     
     function goToSection(index) {
         if (index >= 0 && index < totalSections && index !== currentSection) {
-            console.log(`Enhanced navigation: section ${currentSection} → ${index} (${sectionNames[index]})`);
-            
-            // Clear any pending buffer state when navigating
             resetScrollBuffer();
-            
             currentSection = index;
             updateNavigation();
-        } else if (index === currentSection) {
-            console.log(`Already at section ${index}, no navigation needed`);
-        } else {
-            console.log(`Invalid section index: ${index}. Valid range: 0-${totalSections - 1}`);
         }
     }
     
-    // Navigation dot clicks
     navDots.forEach((dot, index) => {
         dot.addEventListener('click', () => {
-            console.log(`Nav dot clicked: ${index}`);
             goToSection(index);
         });
     });
     
-    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft') {
             goToSection(currentSection - 1);
@@ -80,8 +60,7 @@ function initHorizontalNavigation() {
             goToSection(currentSection + 1);
         }
     });
-    
-    // Touch/swipe navigation
+
     let startX = 0;
     let isDragging = false;
     
@@ -104,14 +83,13 @@ function initHorizontalNavigation() {
         
         if (Math.abs(diff) > 50) {
             if (diff > 0) {
-                goToSection(currentSection + 1); // Swipe left -> next
+                goToSection(currentSection + 1);
             } else {
-                goToSection(currentSection - 1); // Swipe right -> previous
+                goToSection(currentSection - 1);
             }
         }
     });
     
-    // Enhanced scroll detection with buffer zones
     let isNavigating = false;
     
     document.addEventListener('wheel', (e) => {
@@ -119,7 +97,6 @@ function initHorizontalNavigation() {
         const sectionContent = target.closest('.section-content');
         const currentTime = Date.now();
         
-        // If scrolling inside a section content area
         if (sectionContent) {
             const scrollTop = sectionContent.scrollTop;
             const scrollHeight = sectionContent.scrollHeight;
@@ -161,15 +138,11 @@ function initHorizontalNavigation() {
             bufferDirection = scrollDirection;
         }
         
-        // Accumulate scroll buffer with momentum weighting
         const momentumMultiplier = Math.min(scrollMomentum / MOMENTUM_THRESHOLD, 2);
         scrollBuffer += Math.abs(deltaY) * momentumMultiplier;
         lastScrollTime = currentTime;
         
-        // Update visual feedback
         updateBufferVisualFeedback(sectionContent, scrollBuffer, scrollDirection);
-        
-        console.log(`Buffer: ${Math.round(scrollBuffer)}/${SCROLL_BUFFER_THRESHOLD}, momentum: ${momentumMultiplier.toFixed(2)}x`);
         
         // Clear existing navigation timeout
         if (navigationTimeout) {
@@ -181,9 +154,7 @@ function initHorizontalNavigation() {
         
         // Check if buffer threshold is reached
         if (scrollBuffer >= SCROLL_BUFFER_THRESHOLD) {
-            // Add delay before navigation to make it feel more intentional
             navigationTimeout = setTimeout(() => {
-                console.log('Buffer threshold reached, navigating...');
                 resetScrollBuffer();
                 handleSectionNavigation(deltaY);
             }, dynamicDelay);
@@ -217,11 +188,6 @@ function initHorizontalNavigation() {
         
         // Set CSS custom property for progress indication
         sectionContent.style.setProperty('--buffer-progress', progress);
-        
-        // Show visual hint when approaching threshold
-        if (buffer >= BUFFER_VISUAL_THRESHOLD) {
-            console.log(`Showing visual hint - ${Math.round(progress * 100)}% to navigation`);
-        }
     }
     
     function handleSectionNavigation(deltaY) {
@@ -229,7 +195,6 @@ function initHorizontalNavigation() {
         
         isNavigating = true;
         
-        // Add smooth easing transition
         const container = document.querySelector('.horizontal-container');
         container.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         
@@ -251,32 +216,22 @@ function initHorizontalNavigation() {
     
     // Navigation menu clicks - improved with better debugging
     const navLinks = document.querySelectorAll('.nav-links a[data-section]');
-    console.log(`Found ${navLinks.length} navigation links`);
     
     navLinks.forEach((link, index) => {
         const sectionIndex = parseInt(link.getAttribute('data-section'));
-        console.log(`Setting up nav link ${index}: ${link.textContent} → section ${sectionIndex}`);
         
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Prevent event bubbling
-            
-            console.log(`Nav click: "${link.textContent}" → section ${sectionIndex} (${sectionNames[sectionIndex]})`);
-            console.log(`Current section: ${currentSection}`);
-            
+            e.stopPropagation();
             goToSection(sectionIndex);
         });
     });
     
-    // Update active nav link
     function updateActiveNavLink() {
         navLinks.forEach((link) => {
             const linkSection = parseInt(link.getAttribute('data-section'));
             const isActive = linkSection === currentSection;
             link.classList.toggle('active', isActive);
-            if (isActive) {
-                console.log(`Active nav link: ${link.textContent} (section ${linkSection})`);
-            }
         });
     }
     
@@ -284,7 +239,6 @@ function initHorizontalNavigation() {
     updateNavigation();
 }
 
-// Show loading skeleton for GitHub data
 function showGitHubLoadingSkeleton() {
     const projectsList = document.getElementById('projects-list');
     const pullRequests = document.getElementById('pull-requests');
@@ -330,13 +284,9 @@ function showGitHubLoadingSkeleton() {
 }
 
 async function fetchGitHubData() {
-    console.log('🔄 Starting enhanced GitHub data fetch...');
-    
-    // Show loading skeletons immediately
     showGitHubLoadingSkeleton();
     
     try {
-        // Check API rate limit first
         const rateLimitResponse = await fetch(`${GITHUB_API_BASE}/rate_limit`, {
             headers: {
                 'Accept': 'application/vnd.github.v3+json',
@@ -346,24 +296,18 @@ async function fetchGitHubData() {
         
         if (rateLimitResponse.ok) {
             const rateLimitData = await rateLimitResponse.json();
-            console.log('📊 GitHub API Rate Limit:', rateLimitData.rate);
             
             if (rateLimitData.rate.remaining < 10) {
                 const resetTime = new Date(rateLimitData.rate.reset * 1000);
-                console.warn('⚠️ GitHub API rate limit nearly exceeded. Resets at:', resetTime);
                 throw new Error(`GitHub API rate limit exceeded. Resets at ${resetTime.toLocaleTimeString()}`);
             }
         }
 
-        // Updated repository names - let's try a different approach
         const repoNames = ['dsa-rs', 'smol-evm', 'coding-interview-patterns', 'merkle-tree-rs'];
-        console.log('📦 Fetching specific repositories:', repoNames);
         
-        // Fetch repositories with detailed logging
         const repoPromises = repoNames.map(async (repoName) => {
             try {
                 const repoUrl = `${GITHUB_API_BASE}/repos/${GITHUB_USERNAME}/${repoName}`;
-                console.log(`🔍 Fetching: ${repoUrl}`);
                 
                 const response = await fetch(repoUrl, {
                     headers: {
@@ -373,44 +317,21 @@ async function fetchGitHubData() {
                     }
                 });
                 
-                console.log(`📡 Response for ${repoName}:`, {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: Object.fromEntries(response.headers.entries())
-                });
-                
                 if (response.ok) {
                     const repo = await response.json();
-                    console.log(`✅ Successfully fetched: ${repoName}`, {
-                        name: repo.name,
-                        stars: repo.stargazers_count,
-                        language: repo.language,
-                        updated: repo.updated_at
-                    });
                     return repo;
                 } else if (response.status === 404) {
-                    console.warn(`❌ Repository not found: ${repoName} - trying fallback`);
                     return null;
                 } else if (response.status === 403) {
-                    console.warn(`🚫 Rate limited for ${repoName}:`, response.status, response.statusText);
-                    const rateLimitReset = response.headers.get('x-ratelimit-reset');
-                    if (rateLimitReset) {
-                        const resetTime = new Date(parseInt(rateLimitReset) * 1000);
-                        console.warn(`Rate limit resets at: ${resetTime.toLocaleTimeString()}`);
-                    }
                     return null;
                 } else {
-                    console.warn(`❌ Failed to fetch ${repoName}:`, response.status, response.statusText);
                     return null;
                 }
             } catch (error) {
-                console.error(`❌ Network error fetching ${repoName}:`, error);
                 return null;
             }
         });
 
-        // Fetch user's public repositories as fallback
-        console.log('� Fetching user public repositories as fallback...');
         let fallbackRepos = [];
         try {
             const userReposResponse = await fetch(`${GITHUB_API_BASE}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=10&type=public`, {
@@ -421,22 +342,16 @@ async function fetchGitHubData() {
                 }
             });
             
-            console.log('📡 User repos response:', userReposResponse.status, userReposResponse.statusText);
-            
             if (userReposResponse.ok) {
                 fallbackRepos = await userReposResponse.json();
-                console.log(`� Found ${fallbackRepos.length} user repositories as fallback`);
             }
         } catch (error) {
-            console.warn('❌ Failed to fetch user repositories:', error);
+            // Fallback failed
         }
 
-        // Fetch pull requests with enhanced error handling
-        console.log('🔄 Fetching pull requests...');
         let prsData = { items: [] };
         try {
             const prsUrl = `${GITHUB_API_BASE}/search/issues?q=author:${GITHUB_USERNAME}+type:pr&sort=updated&per_page=15`;
-            console.log(`🔍 Fetching PRs: ${prsUrl}`);
             
             const prsResponse = await fetch(prsUrl, {
                 headers: {
@@ -526,9 +441,9 @@ async function fetchGitHubData() {
         console.error('❌ Critical error fetching GitHub data:', error);
         
         document.getElementById('projects-list').innerHTML = 
-            `<div class="loading">❌ Unable to load GitHub data: ${error.message}<br><small>Check browser console for details</small></div>`;
+            `<div class="loading">Fetching project data...</div>`;
         document.getElementById('pull-requests').innerHTML = 
-            `<div class="loading">❌ Unable to load contributions: ${error.message}<br><small>Check browser console for details</small></div>`;
+            `<div class="loading">Loading contributions...</div>`;
     }
 }
 
@@ -680,28 +595,26 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
             console.log('ℹ️ No valid contributed repositories to display');
             html += `
                 <div class="contributions-section">
-                    <h4>🤝 Repositories I've Contributed To</h4>
+                    <h4>Repositories I've Contributed To</h4>
                     <div class="loading">
-                        🔍 No contributed repositories found via API search.
-                        <br><small>This might be due to API limitations or privacy settings.</small>
+                        Unable to load contributed repositories.
                     </div>
                 </div>
                 
-                <h4 style="margin-top: 2rem;">📝 Recent Pull Requests</h4>
+                <h4 style="margin-top: 2rem;">Recent Pull Requests</h4>
             `;
         }
     } else {
         console.log('ℹ️ No contributed repositories data provided');
         html += `
             <div class="contributions-section">
-                <h4>🤝 Repositories I've Contributed To</h4>
+                <h4>Repositories I've Contributed To</h4>
                 <div class="loading">
-                    📡 Unable to load contributed repositories.
-                    <br><small>Check browser console for API details.</small>
+                    Loading contributed repositories...
                 </div>
             </div>
             
-            <h4 style="margin-top: 2rem;">📝 Recent Pull Requests</h4>
+            <h4 style="margin-top: 2rem;">Recent Pull Requests</h4>
         `;
     }
     
@@ -715,7 +628,7 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
     console.log('🔍 Processing pull requests:', prs.length);
     
     // Set initial content while loading detailed PR info
-    prContainer.innerHTML = html + '<div class="loading">🔄 Loading pull request details...</div>';
+    prContainer.innerHTML = html + '<div class="loading">Loading pull request details...</div>';
 
     // Fetch detailed PR information for accurate status
     const prPromises = prs.slice(0, 10).map(async (pr, index) => {
@@ -1166,9 +1079,7 @@ function initMobileMenu() {
     navLinks.setAttribute('aria-hidden', 'true');
 }
 
-// Enhanced visual effects and micro-interactions
 function initVisualEnhancements() {
-    // Intersection Observer for section animations
     const sectionObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -1180,22 +1091,18 @@ function initVisualEnhancements() {
         rootMargin: '0px 0px -50px 0px'
     });
 
-    // Observe all sections
     document.querySelectorAll('.section').forEach(section => {
         sectionObserver.observe(section);
     });
 
-    // Add interactive pulse effect to clickable elements
     document.querySelectorAll('.project-card, .skill-item, .social-icon').forEach(element => {
         element.classList.add('interactive-pulse');
     });
 
-    // Add card hover effects
     document.querySelectorAll('.project-card, .pull-request').forEach(card => {
         card.classList.add('card-hover-effect');
     });
 
-    // Enhanced buffer zone visual feedback
     const bufferIndicators = document.querySelectorAll('.buffer-indicator');
     window.addEventListener('scroll', () => {
         const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
@@ -1210,24 +1117,15 @@ function initVisualEnhancements() {
     });
 }
 
-// Initialize cryptographic background when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing cryptographic background...');
     const container = document.getElementById('cryptoBackground');
     if (container) {
-        console.log('Container found, creating CryptographicBackground instance');
         new CryptographicBackground();
-    } else {
-        console.error('Cryptographic background container not found!');
     }
 
-    // Initialize mobile menu
     initMobileMenu();
-
-    // Initialize visual enhancements
     initVisualEnhancements();
 
-    // Show page with fade-in effect
     const horizontalContainer = document.querySelector('.horizontal-container');
     if (horizontalContainer) {
         setTimeout(() => {
@@ -1235,6 +1133,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 
-    // Fetch GitHub data when page loads
     fetchGitHubData();
 });

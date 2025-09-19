@@ -107,9 +107,7 @@
     transform: translateZ(0); /* Force hardware acceleration for smooth scrolling */
 }
 
-/* Visual Polish Enhancements */
 
-/* Enhanced hover effects with micro-interactions */
 .project-card,
 .skill-item,
 .social-icon,
@@ -522,15 +520,15 @@ h1 {
 .horizontal-container {
     display: flex;
     height: 100vh;
-    width: 600vw; /* 6 sections * 100vw */
-    padding-top: 7rem; /* Account for fixed header - increased */
+    width: 600vw; 
+    padding-top: 7rem;
     transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform: translateX(0);
 }
 
 .horizontal-section {
     width: 100vw;
-    height: calc(100vh - 7rem); /* Adjusted for new header height */
+    height: calc(100vh - 7rem); 
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -545,21 +543,20 @@ h1 {
 }
 
 .section-content {
-    max-width: 700px; /* Reduced from 800px */
-    width: 90%; /* Reduced from 100% */
-    height: 80%; /* Reduced from 100% */
+    max-width: 700px;
+    width: 90%;
+    height: 80%; 
     overflow-y: auto;
     padding: 2rem;
     background: transparent;
     border-radius: 12px;
     box-shadow: none;
     border: 1px solid var(--border-color);
-    margin-top: 2rem; /* Added to move content down */
+    margin-top: 2rem; 
     position: relative;
     transition: all 0.3s ease;
 }
 
-/* Buffer zone visual feedback */
 .section-content.buffer-zone-top {
     box-shadow: 0 -3px 15px rgba(var(--link-color-rgb, 0, 102, 204), calc(0.3 * var(--buffer-progress, 0))),
                 0 0 0 1px var(--border-color);
@@ -1432,7 +1429,7 @@ code, pre, .tech-item, .language-tag {
     .header-content {
         gap: 0.5rem;
         flex: 1;
-        margin-left: 50px; /* Make room for hamburger */
+        margin-left: 50px; 
     }
 
     .social-links {
@@ -1514,7 +1511,7 @@ code, pre, .tech-item, .language-tag {
     }
 
     .horizontal-container {
-        padding-top: 5rem; /* Reduced since nav is now hidden by default */
+        padding-top: 5rem; 
     }
 
     .horizontal-section {
