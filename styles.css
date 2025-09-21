@@ -14,11 +14,6 @@
     --status-closed-text: #721c24;
     --status-merged: #e2e3ff;
     --status-merged-text: #383d41;
-    /* Cryptographic background variables */
-    --crypto-bg-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    --crypto-char-color: #6c757d;
-    --crypto-char-opacity: 0.15; 
-    --crypto-char-size: 12px;
     /* Typography */
     --font-mono: 'Roboto Mono', 'Courier New', monospace;
 }
@@ -39,11 +34,6 @@
     --status-closed-text: #ef5350;
     --status-merged: #311b92;
     --status-merged-text: #9575cd;
-    /* Cryptographic background variables for dark mode */
-    --crypto-bg-gradient: linear-gradient(135deg, #0a0e12 0%, #0f1419 100%);
-    --crypto-char-color: #1da1f2;
-    --crypto-char-opacity: 0.15;
-    --crypto-char-size: 12px;
 }
 
 /* Loading skeleton animations */
@@ -245,114 +235,11 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     line-height: 1.6;
     color: var(--text-color);
-    background: var(--crypto-bg-gradient);
+    background: var(--bg-color);
     overflow-x: hidden;
     overflow-y: hidden; /* Prevent vertical scrolling */
     height: 100vh;
     transition: all 0.3s ease;
-}
-
-/* Cryptographic Background Styles */
-.crypto-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 5;
-    overflow: hidden;
-}
-
-.crypto-character {
-    position: absolute;
-    color: var(--crypto-char-color);
-    opacity: var(--crypto-char-opacity);
-    font-family: var(--font-mono);
-    font-weight: 400;
-    pointer-events: none;
-    user-select: none;
-    white-space: nowrap;
-    z-index: 6;
-}.hex-string {
-    font-size: var(--crypto-char-size);
-    animation: floatHex 25s linear infinite;
-}
-
-.binary-cluster {
-    font-size: calc(var(--crypto-char-size) - 2px);
-    animation: driftBinary 18s linear infinite;
-    letter-spacing: 1px;
-}
-
-.crypto-symbol {
-    font-size: calc(var(--crypto-char-size) + 2px);
-    animation: pulseSymbol 5s ease-in-out infinite;
-}
-
-.hash-symbol {
-    font-size: calc(var(--crypto-char-size) + 4px);
-    animation: rotateHash 10s linear infinite;
-}
-
-/* Cryptographic Animations */
-@keyframes floatHex {
-    0% {
-        transform: translateY(100vh) translateX(-30px) rotate(0deg);
-        opacity: 0;
-    }
-    10% {
-        opacity: var(--crypto-char-opacity);
-    }
-    90% {
-        opacity: var(--crypto-char-opacity);
-    }
-    100% {
-        transform: translateY(-50px) translateX(30px) rotate(180deg);
-        opacity: 0;
-    }
-}
-
-@keyframes driftBinary {
-    0% {
-        transform: translateX(-100px) translateY(0px);
-        opacity: 0;
-    }
-    10% {
-        opacity: var(--crypto-char-opacity);
-    }
-    90% {
-        opacity: var(--crypto-char-opacity);
-    }
-    100% {
-        transform: translateX(calc(100vw + 100px)) translateY(-20px);
-        opacity: 0;
-    }
-}
-
-@keyframes pulseSymbol {
-    0%, 100% {
-        opacity: calc(var(--crypto-char-opacity) * 0.5);
-        transform: scale(1);
-    }
-    50% {
-        opacity: var(--crypto-char-opacity);
-        transform: scale(1.05);
-    }
-}
-
-@keyframes rotateHash {
-    0% {
-        transform: rotate(0deg);
-        opacity: calc(var(--crypto-char-opacity) * 0.7);
-    }
-    50% {
-        opacity: var(--crypto-char-opacity);
-    }
-    100% {
-        transform: rotate(360deg);
-        opacity: calc(var(--crypto-char-opacity) * 0.7);
-    }
 }
 
 /* Ensure content stays above background */
@@ -393,23 +280,24 @@ header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-color);
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+/* Static name and role styles with JetBrains Mono */
+.name, .role {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    white-space: nowrap;
 }
 
-.subtitle {
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    color: var(--muted-text);
-    font-style: italic;
+.name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--heading-color);
+}
+
+.role {
+    font-size: 1.2rem;
     font-weight: 300;
-    margin: 0;
+    color: var(--muted-text);
+    margin-bottom: 1rem;
 }
 
 .social-links {
@@ -521,14 +409,14 @@ h1 {
     display: flex;
     height: 100vh;
     width: 600vw; 
-    padding-top: 7rem;
+    padding-top: 11rem;
     transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform: translateX(0);
 }
 
 .horizontal-section {
     width: 100vw;
-    height: calc(100vh - 7rem); 
+    height: calc(100vh - 11rem); 
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -1511,11 +1399,11 @@ code, pre, .tech-item, .language-tag {
     }
 
     .horizontal-container {
-        padding-top: 5rem; 
+        padding-top: 8rem; 
     }
 
     .horizontal-section {
-        height: calc(100vh - 9rem);
+        height: calc(100vh - 8rem);
         padding: 1rem;
     }
 

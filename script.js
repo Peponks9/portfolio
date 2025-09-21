@@ -6,16 +6,21 @@ let currentSection = 0;
 const totalSections = 6;
 const sectionNames = ['about', 'technologies', 'experience', 'projects', 'opensource', 'blog'];
 
-const SCROLL_BUFFER_THRESHOLD = 120;
+const SCROLL_BUFFER_THRESHOLD = 200; // Increased from 120px for less sensitivity
 const NAVIGATION_DELAY = 250;
 const BUFFER_VISUAL_THRESHOLD = 80;
 const MOMENTUM_THRESHOLD = 5;
+const SCROLL_VELOCITY_MULTIPLIER = 0.8; // Reduced velocity for slower buffer accumulation
 
 let scrollBuffer = 0;
 let bufferDirection = 0;
 let navigationTimeout = null;
 let lastScrollTime = 0;
 let scrollMomentum = 0;
+
+// Navigation cooldown to prevent rapid successive jumps
+let navigationCooldown = false;
+const NAVIGATION_COOLDOWN_MS = 500;
 
 function initHorizontalNavigation() {
     const container = document.querySelector('.horizontal-container');
@@ -40,7 +45,15 @@ function initHorizontalNavigation() {
     }
     
     function goToSection(index) {
+        if (navigationCooldown) return; 
+        
         if (index >= 0 && index < totalSections && index !== currentSection) {
+            // Set cooldown
+            navigationCooldown = true;
+            setTimeout(() => {
+                navigationCooldown = false;
+            }, NAVIGATION_COOLDOWN_MS);
+            
             resetScrollBuffer();
             currentSection = index;
             updateNavigation();
@@ -97,6 +110,9 @@ function initHorizontalNavigation() {
         const sectionContent = target.closest('.section-content');
         const currentTime = Date.now();
         
+        // Ignore small scroll movements to prevent accidental navigation
+        if (Math.abs(e.deltaY) < 50) return;
+        
         if (sectionContent) {
             const scrollTop = sectionContent.scrollTop;
             const scrollHeight = sectionContent.scrollHeight;
@@ -118,10 +134,12 @@ function initHorizontalNavigation() {
                 handleBufferZoneScroll(e.deltaY, sectionContent, currentTime);
             }
         } else {
-            // Scrolling outside section content - navigate sections immediately
-            e.preventDefault();
-            resetScrollBuffer();
-            handleSectionNavigation(e.deltaY);
+            // Scrolling outside section content - navigate sections with higher threshold
+            if (Math.abs(e.deltaY) > 100) { // Higher threshold for direct navigation
+                e.preventDefault();
+                resetScrollBuffer();
+                handleSectionNavigation(e.deltaY);
+            }
         }
     }, { passive: false });
     
@@ -138,8 +156,10 @@ function initHorizontalNavigation() {
             bufferDirection = scrollDirection;
         }
         
+        // Apply velocity multiplier to reduce sensitivity
+        const adjustedDelta = Math.abs(deltaY) * SCROLL_VELOCITY_MULTIPLIER;
         const momentumMultiplier = Math.min(scrollMomentum / MOMENTUM_THRESHOLD, 2);
-        scrollBuffer += Math.abs(deltaY) * momentumMultiplier;
+        scrollBuffer += adjustedDelta * momentumMultiplier;
         lastScrollTime = currentTime;
         
         updateBufferVisualFeedback(sectionContent, scrollBuffer, scrollDirection);
@@ -370,44 +390,6 @@ async function fetchGitHubData() {
             console.error('❌ Error fetching pull requests:', error);
         }
 
-        // Fetch contributed repositories with alternative API
-        console.log('� Fetching contributed repositories...');
-        let contributedReposData = { items: [] };
-        try {
-            // Try multiple approaches for contributed repos
-            const contributedApproaches = [
-                // Approach 1: Search for repos with your contributions
-                `${GITHUB_API_BASE}/search/repositories?q=committer:${GITHUB_USERNAME}&sort=updated&per_page=20`,
-                // Approach 2: Search for repos mentioning you
-                `${GITHUB_API_BASE}/search/repositories?q=${GITHUB_USERNAME}+in:readme&sort=updated&per_page=20`
-            ];
-
-            for (const [index, url] of contributedApproaches.entries()) {
-                console.log(`� Trying contributed repos approach ${index + 1}: ${url}`);
-                
-                const contributedReposResponse = await fetch(url, {
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-
-                console.log(`📡 Contributed repos response (approach ${index + 1}):`, {
-                    status: contributedReposResponse.status,
-                    statusText: contributedReposResponse.statusText
-                });
-
-                if (contributedReposResponse.ok) {
-                    contributedReposData = await contributedReposResponse.json();
-                    console.log(`� Found ${contributedReposData.items?.length || 0} contributed repositories (approach ${index + 1})`);
-                    if (contributedReposData.items?.length > 0) {
-                        break; // Use first successful approach
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('❌ Error fetching contributed repositories:', error);
-        }
-
         // Process results
         const specificRepos = (await Promise.all(repoPromises)).filter(repo => repo !== null);
         let reposToShow = specificRepos;
@@ -422,11 +404,11 @@ async function fetchGitHubData() {
         }
 
         console.log('✅ GitHub data fetch completed');
-        console.log(`📊 Final results: ${reposToShow.length} repos, ${prsData.items?.length || 0} PRs, ${contributedReposData.items?.length || 0} contributed repos`);
+        console.log(`📊 Final results: ${reposToShow.length} repos, ${prsData.items?.length || 0} PRs`);
         
         // Render the data
         renderProjects(reposToShow);
-        renderPullRequestsWithContributions(prsData.items || [], contributedReposData.items || []);
+        renderPullRequestsWithContributions(prsData.items || [], null);
 
     } catch (error) {
         console.error('❌ Critical error fetching GitHub data:', error);
@@ -458,7 +440,7 @@ function renderProjects(repos) {
         .filter(repo => {
             const isValidRepo = repo && repo.name && repo.html_url;
             if (!isValidRepo) {
-                console.warn('⚠️ Filtering out invalid repo:', repo);
+                console.warn('Filtering out invalid repo:', repo);
             }
             return isValidRepo;
         })
@@ -510,98 +492,9 @@ function renderProjects(repos) {
 function renderPullRequestsWithContributions(prs, contributedRepos) {
     const prContainer = document.getElementById('pull-requests');
     
-    console.log('🎨 Rendering pull requests and contributions...');
-    console.log('📊 Input data:', {
-        prs: prs?.length || 0,
-        contributedRepos: contributedRepos?.length || 0
-    });
+    console.log('🎨 Rendering pull requests...');
     
     let html = '';
-    
-    // Add contributed repositories section with better filtering
-    if (contributedRepos && contributedRepos.length > 0) {
-        console.log('🔍 Processing contributed repositories:', contributedRepos);
-        
-        const filteredContributions = contributedRepos
-            .filter(repo => {
-                const isValid = repo && repo.html_url && repo.full_name;
-                const isNotOwn = repo.owner && repo.owner.login !== GITHUB_USERNAME;
-                const isNotFork = !repo.fork; // Prefer original repos
-                
-                console.log(`📋 Repo ${repo.full_name || 'unknown'}:`, {
-                    isValid,
-                    isNotOwn,
-                    isNotFork,
-                    owner: repo.owner?.login
-                });
-                
-                return isValid && isNotOwn;
-            })
-            .sort((a, b) => {
-                // Sort by stars, then by update date
-                const aStars = a.stargazers_count || 0;
-                const bStars = b.stargazers_count || 0;
-                if (aStars !== bStars) return bStars - aStars;
-                return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
-            })
-            .slice(0, 6); // Limit to 6 most relevant
-            
-        console.log('✅ Filtered contributed repos:', filteredContributions.map(r => ({
-            name: r.full_name,
-            stars: r.stargazers_count,
-            owner: r.owner?.login
-        })));
-
-        if (filteredContributions.length > 0) {
-            html += `
-                <div class="contributions-section">
-                    <h4> Repos Contributed To</h4>
-                    <div class="contributed-repos-grid">
-                        ${filteredContributions.map(repo => `
-                            <div class="contributed-repo-item">
-                                <a href="${repo.html_url}" target="_blank" class="repo-title">
-                                    ${repo.full_name}
-                                </a>
-                                <div class="repo-meta">
-                                    ${repo.language || 'Mixed'} • ⭐ ${repo.stargazers_count || 0}
-                                    ${repo.fork ? ' • Fork' : ''}
-                                </div>
-                                <div class="repo-description">
-                                    ${repo.description ? 
-                                        (repo.description.length > 100 ? 
-                                            repo.description.substring(0, 100) + '...' : 
-                                            repo.description
-                                        ) : 
-                                        'No description available.'
-                                    }
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        } else {
-            console.log('ℹ️ No valid contributed repositories to display');
-            html += `
-                <div class="contributions-section">
-                    <h4>Repositories I've Contributed To</h4>
-                    <div class="loading">
-                        Unable to load contributed repositories.
-                    </div>
-                </div>
-            `;
-        }
-    } else {
-        console.log('ℹ️ No contributed repositories data provided');
-        html += `
-            <div class="contributions-section">
-                <h4>Repositories I've Contributed To</h4>
-                <div class="loading">
-                    Loading contributed repositories...
-                </div>
-            </div>
-        `;
-    }
     
     // Add Recent Pull Requests section header
     html += '<h4 style="margin-top: 2rem;">Recent Pull Requests</h4>';
@@ -767,16 +660,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Initialize cryptographic background when page loads
+// Initialize mobile menu and visual enhancements when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing cryptographic background...');
-    const container = document.getElementById('cryptoBackground');
-    if (container) {
-        console.log('Container found, creating CryptographicBackground instance');
-        new CryptographicBackground();
-    } else {
-        console.error('Cryptographic background container not found!');
-    }
+    console.log('DOM loaded, initializing components...');
 
     // Fetch GitHub data when page loads
     fetchGitHubData();
@@ -842,161 +728,6 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-class CryptographicBackground {
-    constructor() {
-        this.container = document.getElementById('cryptoBackground');
-        this.characters = [];
-        this.hexChars = '0123456789ABCDEF';
-        this.cryptoSymbols = ['⊕', '∈', '≡', '∧', '∨', '¬'];
-        this.isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-        
-        this.init();
-        this.setupThemeObserver();
-    }
-
-    init() {
-        console.log('Initializing cryptographic background...');
-        this.createStaticElements();
-        this.startAnimatedElements();
-        console.log('Cryptographic background initialized');
-    }
-
-    setupThemeObserver() {
-        // Watch for theme changes
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-                    this.isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-                    this.updateTheme();
-                }
-            });
-        });
-        
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme']
-        });
-    }
-
-    updateTheme() {
-        // Update existing elements' opacity and colors based on theme
-        const elements = this.container.querySelectorAll('.crypto-character');
-        elements.forEach(element => {
-            element.style.opacity = this.isDarkMode ? '0.20' : '0.15';
-        });
-    }
-
-    createHexString() {
-        const element = document.createElement('div');
-        element.className = 'crypto-character hex-string';
-        
-        // Generate random hex string
-        let hexString = '';
-        const length = Math.floor(Math.random() * 6) + 4;
-        for (let i = 0; i < length; i++) {
-            hexString += this.hexChars[Math.floor(Math.random() * this.hexChars.length)];
-        }
-        
-        element.textContent = hexString;
-        element.style.left = Math.random() * 100 + '%';
-        element.style.animationDelay = Math.random() * 5 + 's';
-        element.style.animationDuration = (20 + Math.random() * 10) + 's';
-        
-        this.container.appendChild(element);
-        
-        // Remove element after animation
-        setTimeout(() => {
-            if (element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
-        }, 30000);
-    }
-
-    createBinaryCluster() {
-        const element = document.createElement('div');
-        element.className = 'crypto-character binary-cluster';
-        
-        // Generate binary string
-        let binary = '';
-        const length = Math.floor(Math.random() * 10) + 6;
-        for (let i = 0; i < length; i++) {
-            binary += Math.random() > 0.5 ? '1' : '0';
-        }
-        
-        element.textContent = binary;
-        element.style.top = Math.random() * 100 + '%';
-        element.style.animationDelay = Math.random() * 3 + 's';
-        element.style.animationDuration = (15 + Math.random() * 8) + 's';
-        
-        this.container.appendChild(element);
-        
-        setTimeout(() => {
-            if (element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
-        }, 23000);
-    }
-
-    createCryptoSymbol() {
-        const element = document.createElement('div');
-        element.className = 'crypto-character crypto-symbol';
-        
-        element.textContent = this.cryptoSymbols[Math.floor(Math.random() * this.cryptoSymbols.length)];
-        element.style.left = Math.random() * 100 + '%';
-        element.style.top = Math.random() * 100 + '%';
-        element.style.animationDelay = Math.random() * 4 + 's';
-        element.style.animationDuration = (4 + Math.random() * 2) + 's';
-        
-        this.container.appendChild(element);
-        console.log('Created crypto symbol:', element.textContent);
-    }
-
-    createHashSymbol() {
-        const element = document.createElement('div');
-        element.className = 'crypto-character hash-symbol';
-        
-        element.textContent = '#';
-        element.style.left = Math.random() * 100 + '%';
-        element.style.top = Math.random() * 100 + '%';
-        element.style.animationDelay = Math.random() * 8 + 's';
-        element.style.animationDuration = (8 + Math.random() * 4) + 's';
-        
-        this.container.appendChild(element);
-    }
-
-    createStaticElements() {
-        // Create fewer static elements for subtlety
-        for (let i = 0; i < 8; i++) {
-            this.createCryptoSymbol();
-        }
-        
-        for (let i = 0; i < 5; i++) {
-            this.createHashSymbol();
-        }
-    }
-
-    startAnimatedElements() {
-        // Create floating hex strings less frequently
-        setInterval(() => {
-            this.createHexString();
-        }, 3000);
-
-        // Create binary clusters occasionally
-        setInterval(() => {
-            this.createBinaryCluster();
-        }, 5000);
-
-        // Occasionally refresh static symbols
-        setInterval(() => {
-            const symbols = this.container.querySelectorAll('.crypto-symbol');
-            if (symbols.length > 0) {
-                const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-                randomSymbol.textContent = this.cryptoSymbols[Math.floor(Math.random() * this.cryptoSymbols.length)];
-            }
-        }, 10000);
-    }
-}
 
 // Mobile menu functionality
 function initMobileMenu() {
@@ -1105,11 +836,6 @@ function initVisualEnhancements() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('cryptoBackground');
-    if (container) {
-        new CryptographicBackground();
-    }
-
     initMobileMenu();
     initVisualEnhancements();
 
