@@ -480,8 +480,7 @@ function renderProjects(repos) {
                 ${repo.description || 'No description available.'}
             </div>
             <div class="project-stats">
-                ⭐ ${repo.stargazers_count || 0} • 🍴 ${repo.forks_count || 0}
-                ${repo.topics && repo.topics.length > 0 ? ' • 🏷️ ' + repo.topics.slice(0, 3).join(', ') : ''}
+                ${repo.topics && repo.topics.length > 0 ? '🏷️ ' + repo.topics.slice(0, 3).join(', ') : ''}
             </div>
         </div>
     `).join('');
