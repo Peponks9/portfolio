@@ -6,11 +6,11 @@ let currentSection = 0;
 const totalSections = 6;
 const sectionNames = ['about', 'technologies', 'experience', 'projects', 'opensource', 'blog'];
 
-const SCROLL_BUFFER_THRESHOLD = 200; // Increased from 120px for less sensitivity
-const NAVIGATION_DELAY = 250;
+const SCROLL_BUFFER_THRESHOLD = 20; // Extremely low threshold for instant navigation
+const NAVIGATION_DELAY = 100; // Very fast response
 const BUFFER_VISUAL_THRESHOLD = 80;
 const MOMENTUM_THRESHOLD = 5;
-const SCROLL_VELOCITY_MULTIPLIER = 0.8; // Reduced velocity for slower buffer accumulation
+const SCROLL_VELOCITY_MULTIPLIER = 3.0; // Triple speed buffer accumulation 
 
 let scrollBuffer = 0;
 let bufferDirection = 0;
@@ -18,9 +18,9 @@ let navigationTimeout = null;
 let lastScrollTime = 0;
 let scrollMomentum = 0;
 
-// Navigation cooldown to prevent rapid successive jumps
+
 let navigationCooldown = false;
-const NAVIGATION_COOLDOWN_MS = 500;
+const NAVIGATION_COOLDOWN_MS = 100; // Very short cooldown for rapid navigation 
 
 function initHorizontalNavigation() {
     const container = document.querySelector('.horizontal-container');
@@ -111,7 +111,7 @@ function initHorizontalNavigation() {
         const currentTime = Date.now();
         
         // Ignore small scroll movements to prevent accidental navigation
-        if (Math.abs(e.deltaY) < 50) return;
+        if (Math.abs(e.deltaY) < 10) return; // Extremely sensitive - almost any scroll
         
         if (sectionContent) {
             const scrollTop = sectionContent.scrollTop;
@@ -134,8 +134,8 @@ function initHorizontalNavigation() {
                 handleBufferZoneScroll(e.deltaY, sectionContent, currentTime);
             }
         } else {
-            // Scrolling outside section content - navigate sections with higher threshold
-            if (Math.abs(e.deltaY) > 100) { // Higher threshold for direct navigation
+            // Scrolling outside section content - navigate sections with lower threshold
+            if (Math.abs(e.deltaY) > 25) { 
                 e.preventDefault();
                 resetScrollBuffer();
                 handleSectionNavigation(e.deltaY);
@@ -147,7 +147,7 @@ function initHorizontalNavigation() {
         const scrollDirection = deltaY > 0 ? 1 : -1;
         const timeDelta = currentTime - lastScrollTime;
         
-        // Calculate scroll momentum (pixels per millisecond)
+        // Calculate scroll momentum 
         scrollMomentum = timeDelta > 0 ? Math.abs(deltaY) / timeDelta : 0;
         
         // Reset buffer if direction changed or too much time passed
@@ -170,7 +170,7 @@ function initHorizontalNavigation() {
         }
         
         // Dynamic delay based on momentum (faster scrolling = shorter delay)
-        const dynamicDelay = Math.max(NAVIGATION_DELAY - (scrollMomentum * 50), 100);
+        const dynamicDelay = Math.max(NAVIGATION_DELAY - (scrollMomentum * 50), 25); // Extremely fast minimum delay
         
         // Check if buffer threshold is reached
         if (scrollBuffer >= SCROLL_BUFFER_THRESHOLD) {
@@ -234,7 +234,7 @@ function initHorizontalNavigation() {
     
     // Navigation menu clicks
     
-    // Navigation menu clicks - improved with better debugging
+    // Navigation menu clicks
     const navLinks = document.querySelectorAll('.nav-links a[data-section]');
     
     navLinks.forEach((link, index) => {
@@ -485,7 +485,7 @@ function renderProjects(repos) {
         </div>
     `).join('');
     
-    console.log('✅ Projects rendered successfully');
+    console.log('Projects rendered successfully');
 }
 
 function renderPullRequestsWithContributions(prs, contributedRepos) {
@@ -513,7 +513,7 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
     // Fetch detailed PR information for accurate status
     const prPromises = prs.slice(0, 10).map(async (pr, index) => {
         try {
-            console.log(`📡 Fetching PR details ${index + 1}/${Math.min(10, prs.length)}: ${pr.title}`);
+            console.log(`Fetching PR details ${index + 1}/${Math.min(10, prs.length)}: ${pr.title}`);
             
             const prDetailResponse = await fetch(pr.pull_request.url, {
                 headers: {
@@ -529,16 +529,16 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
                     merged: prDetail.merged
                 };
             } else {
-                console.warn(`⚠️ Failed to fetch PR details for: ${pr.title}`);
+                console.warn(`Failed to fetch PR details for: ${pr.title}`);
             }
         } catch (error) {
-            console.warn('❌ Error fetching PR details:', error);
+            console.warn('Error fetching PR details:', error);
         }
         return pr;
     });
 
     Promise.all(prPromises).then(detailedPrs => {
-        console.log('✅ All PR details fetched, rendering...');
+        console.log('All PR details fetched, rendering...');
         
         const prHtml = detailedPrs.map(pr => {
             let status, statusClass;
@@ -567,9 +567,9 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
         }).join('');
         
         prContainer.innerHTML = html + `<div class="pr-grid">${prHtml}</div>`;
-        console.log('✅ Pull requests rendered successfully');
+        console.log('Pull requests rendered successfully');
     }).catch(error => {
-        console.error('❌ Error processing PR details:', error);
+        console.error('Error processing PR details:', error);
         
         // Fallback rendering without detailed status
         const fallbackPrHtml = prs.slice(0, 10).map(pr => `
@@ -585,7 +585,7 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
         `).join('');
         
         prContainer.innerHTML = html + `<div class="pr-grid">${fallbackPrHtml}</div>`;
-        console.log('✅ Pull requests rendered with fallback');
+        console.log('Pull requests rendered with fallback');
     });
 }
 
@@ -696,7 +696,7 @@ document.addEventListener('touchend', function(e) {
         fetchGitHubData();
         
         const notification = document.createElement('div');
-        notification.textContent = '🔄 Refreshing...';
+        notification.textContent = 'Refreshing...';
         notification.style.cssText = `
             position: fixed;
             top: 20px;
