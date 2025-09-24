@@ -495,9 +495,6 @@ function renderPullRequestsWithContributions(prs, contributedRepos) {
     
     let html = '';
     
-    // Add Recent Pull Requests section header
-    html += '<h4 style="margin-top: 2rem;">Recent Pull Requests</h4>';
-    
     // Add pull requests section
     if (!prs || prs.length === 0) {
         html += '<div class="loading">No pull requests found.</div>';
