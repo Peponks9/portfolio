@@ -599,6 +599,79 @@ h2 {
     line-height: 1.3;
 }
 
+/* Most contributed repositories section */
+.most-contributed-section {
+    margin-bottom: 3rem;
+}
+
+.contributed-repos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.contributed-repo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.contributed-repo-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: var(--border-color);
+}
+
+.repo-link {
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+}
+
+.repo-name {
+    font-weight: 600;
+    color: var(--link-color);
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+
+.repo-link:hover .repo-name {
+    color: var(--link-color);
+    text-decoration: underline;
+}
+
+.contribution-count {
+    font-size: 0.9rem;
+    color: var(--muted-text);
+    font-weight: 500;
+    margin-left: 1rem;
+    white-space: nowrap;
+}
+
+/* Mobile responsive for contributed repos */
+@media (max-width: 768px) {
+    .contributed-repos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .contributed-repo-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .contribution-count {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+}
+
 /* Remove all decorative borders - keep only essential separators */
 .horizontal-section {
     border: none !important;
